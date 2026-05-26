@@ -5,6 +5,8 @@ pub mod verifier;
 pub mod halo2_backend;
 #[cfg(feature = "groth16")]
 pub mod groth16_backend;
+#[cfg(feature = "groth16")]
+pub mod groth16_circuits;
 
 use crate::{ZkProofError, utils};
 use serde::Serialize;
