@@ -12,6 +12,7 @@ pub enum CircuitKind {
 pub enum ProofScheme {
     DevelopmentSignedTranscriptV1,
     Halo2V1,
+    Groth16V1,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

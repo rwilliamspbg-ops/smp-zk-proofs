@@ -88,6 +88,48 @@ pub fn prove_training_halo2(
     })
 }
 
+#[cfg(feature = "groth16")]
+pub fn prove_location_groth16(
+    context: &ProvingContext,
+    public_inputs: &LocationPublicInputs,
+    private_witness: &LocationPrivateWitness,
+) -> Result<Proof, ZkProofError> {
+    let proof_bytes = crate::proofs::groth16_backend::prove_location_groth16(public_inputs, private_witness)?;
+    let report = LocationCircuit.evaluate(public_inputs, private_witness)?;
+    let statement_digest = utils::hash_serializable(public_inputs)?;
+    let constraint_digest = report.digest()?;
+
+    Ok(Proof {
+        circuit: report.circuit,
+        scheme: ProofScheme::Groth16V1,
+        statement_digest,
+        constraint_digest,
+        signature: Vec::new(),
+        backend_proof: Some(proof_bytes),
+    })
+}
+
+#[cfg(feature = "groth16")]
+pub fn prove_training_groth16(
+    context: &ProvingContext,
+    public_inputs: &TrainingPublicInputs,
+    private_witness: &TrainingPrivateWitness,
+) -> Result<Proof, ZkProofError> {
+    let proof_bytes = crate::proofs::groth16_backend::prove_training_groth16(public_inputs, private_witness)?;
+    let report = TrainingCircuit.evaluate(public_inputs, private_witness)?;
+    let statement_digest = utils::hash_serializable(public_inputs)?;
+    let constraint_digest = report.digest()?;
+
+    Ok(Proof {
+        circuit: report.circuit,
+        scheme: ProofScheme::Groth16V1,
+        statement_digest,
+        constraint_digest,
+        signature: Vec::new(),
+        backend_proof: Some(proof_bytes),
+    })
+}
+
 fn sign_proof<T: Serialize>(
     context: &ProvingContext,
     public_inputs: &T,

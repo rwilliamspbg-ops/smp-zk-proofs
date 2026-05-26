@@ -26,6 +26,19 @@ pub fn verify_location_proof(
         }
     }
 
+    #[cfg(feature = "groth16")]
+    {
+        if proof.scheme == ProofScheme::Groth16V1 {
+            if let Some(bytes) = &proof.backend_proof {
+                return crate::proofs::groth16_backend::verify_location_groth16(
+                    &verification_key.verifying_key,
+                    public_inputs,
+                    bytes,
+                );
+            }
+        }
+    }
+
     verify_proof(
         verification_key,
         CircuitKind::Location,
@@ -44,6 +57,19 @@ pub fn verify_training_proof(
         if proof.scheme == ProofScheme::Halo2V1 {
             if let Some(bytes) = &proof.backend_proof {
                 return crate::proofs::halo2_backend::verify_training_halo2(
+                    &verification_key.verifying_key,
+                    public_inputs,
+                    bytes,
+                );
+            }
+        }
+    }
+
+    #[cfg(feature = "groth16")]
+    {
+        if proof.scheme == ProofScheme::Groth16V1 {
+            if let Some(bytes) = &proof.backend_proof {
+                return crate::proofs::groth16_backend::verify_training_groth16(
                     &verification_key.verifying_key,
                     public_inputs,
                     bytes,

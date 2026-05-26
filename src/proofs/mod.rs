@@ -3,6 +3,8 @@ pub mod types;
 pub mod verifier;
 #[cfg(feature = "halo2")]
 pub mod halo2_backend;
+#[cfg(feature = "groth16")]
+pub mod groth16_backend;
 
 use crate::{ZkProofError, utils};
 use serde::Serialize;

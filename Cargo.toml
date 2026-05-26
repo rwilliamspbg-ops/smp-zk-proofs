@@ -27,6 +27,7 @@ harness = false
 default = []
 # Enable the Halo2 proving backend (opt-in). Add real backend deps when ready.
 halo2 = []
+groth16 = []
 
 [dependencies.halo2_proofs]
 version = "0.1"
@@ -34,6 +35,18 @@ optional = true
 
 [dependencies.pasta_curves]
 version = "0.3"
+optional = true
+
+[dependencies.ark-groth16]
+version = "0.4"
+optional = true
+
+[dependencies.ark-bn254]
+version = "0.4"
+optional = true
+
+[dependencies.ark-ff]
+version = "0.4"
 optional = true
 
 [package.metadata]
