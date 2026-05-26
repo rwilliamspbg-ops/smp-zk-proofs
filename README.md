@@ -1,6 +1,10 @@
 # smp-zk-proofs
 
-`smp-zk-proofs` is a Rust library scaffold for verifiable aggregation ledgers in distributed spatial networks. It provides a clean crate layout, deterministic proof-generation and verification flows, serialization helpers, runnable examples, and benchmark hooks so the repository can evolve toward Halo2/arkworks-backed zero-knowledge proofs without changing its public module boundaries.
+[![ci](https://github.com/rwilliamspbg-ops/smp-zk-proofs/actions/workflows/ci.yml/badge.svg)](https://github.com/rwilliamspbg-ops/smp-zk-proofs/actions/workflows/ci.yml)
+
+`smp-zk-proofs` is a Rust library for verifiable aggregation ledgers in distributed spatial networks. It provides a clean crate layout, deterministic proof-generation and verification flows, serialization helpers, runnable examples, and benchmark hooks so the repository can evolve toward Halo2/arkworks-backed zero-knowledge proofs without changing its public module boundaries.
+
+Prerequisites: Rust 1.95 or newer.
 
 ## What is being proven?
 
@@ -118,3 +122,12 @@ cargo run --example weight_aggregation_proof
 ## Post-quantum placeholder
 
 `src/pq_compatibility/` reserves a backend-neutral extension point so a future lattice- or hash-based proving system can be slotted in without rewriting the circuit-facing API.
+
+The current placeholder backend advertises a structured migration path: keep the public circuit API stable, add a concrete post-quantum backend behind the generator and verifier facades, and lock the transition down with compatibility tests before switching callers over.
+
+## Release Process
+
+1. Run `cargo fmt --check`, `cargo clippy --all-targets --all-features --locked -- -D warnings`, and `cargo test --all-targets --locked`.
+2. Verify `cargo test --doc --locked`, `cargo build --examples --locked`, and `cargo build --benches --locked`.
+3. Update `CHANGELOG.md` with the release summary.
+4. Publish the release tag from a clean working tree.

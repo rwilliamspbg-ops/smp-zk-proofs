@@ -2,9 +2,12 @@
 name = "smp-zk-proofs"
 version = "0.1.0"
 edition = "2024"
-description = "Scaffold for verifiable aggregation proofs in Sovereign Map style spatial networks"
+rust-version = "1.95"
+description = "Verifiable aggregation proofs for Sovereign Map style spatial networks"
 license = "MIT"
 repository = "https://github.com/rwilliamspbg-ops/smp-zk-proofs"
+keywords = ["zk", "proofs", "aggregation", "spatial", "verifiable"]
+categories = ["cryptography", "science"]
 
 [dependencies]
 bincode = "1.3"

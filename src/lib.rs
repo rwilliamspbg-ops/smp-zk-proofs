@@ -9,7 +9,9 @@ pub mod utils;
 
 pub use constraints::{ConstraintReport, LocationCircuit, TrainingCircuit};
 pub use error::ZkProofError;
-pub use pq_compatibility::{PlaceholderBackend, PostQuantumBackend, PostQuantumBackendDescriptor};
+pub use pq_compatibility::{
+    PlaceholderBackend, PostQuantumBackend, PostQuantumBackendDescriptor, PostQuantumBackendStatus,
+};
 pub use proofs::generator::{ProvingContext, prove_location, prove_training};
 pub use proofs::types::{
     BoundingBox, CircuitKind, LocationPrivateWitness, LocationPublicInputs, Proof, ProofScheme,
