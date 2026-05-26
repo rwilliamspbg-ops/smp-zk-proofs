@@ -26,8 +26,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     verify_location_proof(&context.verification_key(), &public_inputs, &decoded_proof)?;
 
+    println!("location proof verified");
+    println!("circuit: {:?}", decoded_proof.circuit);
+    println!("scheme: {:?}", decoded_proof.scheme);
     println!(
-        "location proof verified with {} serialized bytes",
+        "serialized proof size: {} bytes",
         proof_bytes.len()
     );
     Ok(())

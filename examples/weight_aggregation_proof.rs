@@ -19,8 +19,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     verify_training_proof(&context.verification_key(), &public_inputs, &decoded_proof)?;
 
+    println!("training proof verified");
+    println!("circuit: {:?}", decoded_proof.circuit);
+    println!("scheme: {:?}", decoded_proof.scheme);
     println!(
-        "training proof verified with {} serialized bytes",
+        "serialized proof size: {} bytes",
         proof_bytes.len()
     );
     Ok(())

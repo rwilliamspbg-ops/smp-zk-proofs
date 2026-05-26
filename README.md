@@ -83,6 +83,8 @@ The benchmark harness in `benches/proof_benchmarks.rs` is ready to track latency
 
 ## Usage
 
+### Location proof
+
 ```rust
 use smp_zk_proofs::{
     BoundingBox, LocationPrivateWitness, LocationPublicInputs, ProvingContext,
@@ -109,6 +111,30 @@ let proof = prove_location(&context, &public_inputs, &witness)?;
 verify_location_proof(&context.verification_key(), &public_inputs, &proof)?;
 # Ok::<(), smp_zk_proofs::ZkProofError>(())
 ```
+
+### Training proof
+
+```rust
+use smp_zk_proofs::{
+    ProvingContext, TrainingPrivateWitness, TrainingPublicInputs, prove_training,
+    verify_training_proof,
+};
+
+let context = ProvingContext::from_seed([9_u8; 32]);
+let witness = TrainingPrivateWitness {
+    steps_completed: 8,
+    observed_loss_milli: 275,
+    weight_update_digest: [5_u8; 32],
+    blinding: [1_u8; 32],
+};
+let public_inputs = TrainingPublicInputs::from_witness(8, 300, [2_u8; 32], &witness)?;
+
+let proof = prove_training(&context, &public_inputs, &witness)?;
+verify_training_proof(&context.verification_key(), &public_inputs, &proof)?;
+# Ok::<(), smp_zk_proofs::ZkProofError>(())
+```
+
+Both proof flows also support deterministic `bincode` round-tripping through `to_bytes()` and `from_bytes()`.
 
 ## Examples
 
