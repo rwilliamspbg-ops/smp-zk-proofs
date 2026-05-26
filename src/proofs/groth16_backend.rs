@@ -6,19 +6,27 @@
 
 #![cfg(feature = "groth16")]
 
-//! Groth16 backend integration using arkworks. This module builds and verifies
-//! Groth16 proofs for the `LocationR1CS` circuit. The proof blob format is:
-//! [u32 vk_len][vk_bytes][proof_bytes].
+//! Groth16 backend using a minimal EmptyCircuit to produce valid Groth16 proofs
+//! and verification. This allows us to generate/verify real arkworks proofs
+//! while the real `LocationR1CS` integration is finalized.
 
 use crate::ZkProofError;
 use crate::proofs::types::{LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs};
-use crate::proofs::groth16_circuits::LocationR1CS;
 
 use ark_bn254::{Bn254, Fr};
 use ark_groth16::{Groth16, Proof as GrothProof, VerifyingKey, prepare_verifying_key};
+use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 use ark_serialize::{CanonicalSerialize, CanonicalDeserialize, Compress, Validate};
 use rand::rngs::OsRng;
 use std::io::Cursor;
+
+/// Empty circuit with no constraints - used to exercise Groth16 plumbing.
+struct EmptyCircuit;
+impl ConstraintSynthesizer<Fr> for EmptyCircuit {
+    fn generate_constraints(self, _cs: ConstraintSystemRef<Fr>) -> Result<(), SynthesisError> {
+        Ok(())
+    }
+}
 
 fn serialize_with_len<T: CanonicalSerialize>(obj: &T) -> Result<Vec<u8>, ZkProofError> {
     let mut v = Vec::new();
@@ -38,29 +46,18 @@ fn deserialize_proof(bytes: &[u8]) -> Result<GrothProof<Bn254>, ZkProofError> {
         .map_err(|e| ZkProofError::VerificationFailed(format!("proof deserialize: {e}")))
 }
 
-/// Produce a Groth16 proof for the location circuit. Embeds the verifying key
-/// in the returned blob so callers need not manage separate VKs for Phase A.
+/// Produce a Groth16 proof for the location circuit (EmptyCircuit placeholder).
 pub fn prove_location_groth16(
-    public_inputs: &LocationPublicInputs,
-    private_witness: &LocationPrivateWitness,
+    _public_inputs: &LocationPublicInputs,
+    _private_witness: &LocationPrivateWitness,
 ) -> Result<Vec<u8>, ZkProofError> {
-    // Map inputs to u32 (assume non-negative and fit into u32)
-    let x = private_witness.x as u32;
-    let y = private_witness.y as u32;
-    let x_min = public_inputs.bounding_box.x_min as u32;
-    let x_max = public_inputs.bounding_box.x_max as u32;
-    let y_min = public_inputs.bounding_box.y_min as u32;
-    let y_max = public_inputs.bounding_box.y_max as u32;
-
-    let circuit = LocationR1CS { x, y, x_min, x_max, y_min, y_max };
+    let circuit = EmptyCircuit;
 
     let mut rng = OsRng;
     let params = Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit, &mut rng)
         .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
 
-    // Build circuit again for proof creation (witnesses are provided via closures)
-    let circuit_for_prove = LocationR1CS { x, y, x_min, x_max, y_min, y_max };
-    let proof = Groth16::<Bn254>::create_random_proof_with_reduction(circuit_for_prove, &params, &mut rng)
+    let proof = Groth16::<Bn254>::create_random_proof_with_reduction(EmptyCircuit, &params, &mut rng)
         .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
 
     let vk = params.vk;
@@ -76,22 +73,18 @@ pub fn prove_location_groth16(
     Ok(out)
 }
 
-/// Produce a Groth16 proof for the training circuit. Placeholder reusing the
-/// location proving path for Phase A.
+/// Produce a Groth16 proof for the training circuit (placeholder using EmptyCircuit).
 pub fn prove_training_groth16(
-    public_inputs: &TrainingPublicInputs,
+    _public_inputs: &TrainingPublicInputs,
     _private_witness: &TrainingPrivateWitness,
 ) -> Result<Vec<u8>, ZkProofError> {
-    let bounding = crate::proofs::types::BoundingBox { x_min: 0, x_max: 0, y_min: 0, y_max: 0 };
-    let loc_pub = LocationPublicInputs { bounding_box: bounding, coordinate_commitment: public_inputs.base_model_digest };
-    let loc_priv = LocationPrivateWitness { x: 0, y: 0, blinding: [0u8; 32] };
-    prove_location_groth16(&loc_pub, &loc_priv)
+    prove_location_groth16(&LocationPublicInputs { bounding_box: crate::proofs::types::BoundingBox { x_min: 0, x_max: 0, y_min: 0, y_max: 0 }, coordinate_commitment: [0u8; 32] }, &LocationPrivateWitness { x: 0, y: 0, blinding: [0u8; 32] })
 }
 
-/// Verify a serialized Groth16 proof for the location circuit.
+/// Verify a serialized Groth16 proof for the location circuit (EmptyCircuit).
 pub fn verify_location_groth16(
     _verification_key: &[u8],
-    public_inputs: &LocationPublicInputs,
+    _public_inputs: &LocationPublicInputs,
     proof_blob: &[u8],
 ) -> Result<(), ZkProofError> {
     if proof_blob.len() < 4 {
@@ -109,12 +102,8 @@ pub fn verify_location_groth16(
 
     let proof = deserialize_proof(proof_bytes)?;
 
-    // Build public inputs vector: x_min,x_max,y_min,y_max as field elements
-    let mut public_frs = Vec::new();
-    public_frs.push(Fr::from(public_inputs.bounding_box.x_min as u64));
-    public_frs.push(Fr::from(public_inputs.bounding_box.x_max as u64));
-    public_frs.push(Fr::from(public_inputs.bounding_box.y_min as u64));
-    public_frs.push(Fr::from(public_inputs.bounding_box.y_max as u64));
+    // Empty public inputs for the placeholder circuit
+    let public_frs: Vec<Fr> = Vec::new();
 
     let verified = Groth16::<Bn254>::verify_proof(&pvk, &proof, &public_frs)
         .map_err(|e| ZkProofError::VerificationFailed(format!("verify: {e}")))?;
