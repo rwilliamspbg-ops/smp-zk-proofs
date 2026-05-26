@@ -27,3 +27,14 @@ harness = false
 default = []
 # Enable the Halo2 proving backend (opt-in). Add real backend deps when ready.
 halo2 = []
+
+[dependencies.halo2_proofs]
+version = "0.1"
+optional = true
+
+[dependencies.pasta_curves]
+version = "0.3"
+optional = true
+
+[package.metadata]
+note = "Halo2 feature is opt-in; pinned optional deps are below"
