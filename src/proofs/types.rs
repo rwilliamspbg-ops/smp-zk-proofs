@@ -11,6 +11,8 @@ pub enum CircuitKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProofScheme {
     DevelopmentSignedTranscriptV1,
+    #[serde(default)]
+    Halo2V1,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -147,6 +149,8 @@ pub struct Proof {
     pub statement_digest: [u8; 32],
     pub constraint_digest: [u8; 32],
     pub signature: Vec<u8>,
+    #[serde(default)]
+    pub backend_proof: Option<Vec<u8>>,
 }
 
 impl Proof {

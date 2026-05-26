@@ -12,6 +12,20 @@ pub fn verify_location_proof(
     public_inputs: &LocationPublicInputs,
     proof: &Proof,
 ) -> Result<(), ZkProofError> {
+    // If the proof is a Halo2 proof and the feature is enabled, route to halo2 verifier.
+    #[cfg(feature = "halo2")]
+    {
+        if proof.scheme == ProofScheme::Halo2V1 {
+            if let Some(bytes) = &proof.backend_proof {
+                return crate::proofs::halo2_backend::verify_location_halo2(
+                    &verification_key.verifying_key,
+                    public_inputs,
+                    bytes,
+                );
+            }
+        }
+    }
+
     verify_proof(
         verification_key,
         CircuitKind::Location,
@@ -25,6 +39,19 @@ pub fn verify_training_proof(
     public_inputs: &TrainingPublicInputs,
     proof: &Proof,
 ) -> Result<(), ZkProofError> {
+    #[cfg(feature = "halo2")]
+    {
+        if proof.scheme == ProofScheme::Halo2V1 {
+            if let Some(bytes) = &proof.backend_proof {
+                return crate::proofs::halo2_backend::verify_training_halo2(
+                    &verification_key.verifying_key,
+                    public_inputs,
+                    bytes,
+                );
+            }
+        }
+    }
+
     verify_proof(
         verification_key,
         CircuitKind::Training,
