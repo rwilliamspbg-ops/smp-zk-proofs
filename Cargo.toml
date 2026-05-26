@@ -33,9 +33,8 @@ groth16 = []
 version = "0.1"
 optional = true
 
-[dependencies.pasta_curves]
-version = "0.3"
-optional = true
+[package.metadata]
+note = "Halo2 feature is opt-in; pinned optional deps are below"
 
 [dependencies.ark-groth16]
 version = "0.4"
