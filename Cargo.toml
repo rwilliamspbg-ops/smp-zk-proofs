@@ -22,3 +22,16 @@ criterion = "0.8.2"
 [[bench]]
 name = "proof_benchmarks"
 harness = false
+
+[features]
+default = []
+# Enable the Halo2 proving backend (opt-in).
+halo2 = ["halo2_proofs", "pasta_curves"]
+
+[dependencies.halo2_proofs]
+version = "0.1"
+optional = true
+
+[dependencies.pasta_curves]
+version = "0.3"
+optional = true
