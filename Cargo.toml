@@ -48,5 +48,3 @@ optional = true
 version = "0.4"
 optional = true
 
-[package.metadata]
-note = "Halo2 feature is opt-in; pinned optional deps are below"
