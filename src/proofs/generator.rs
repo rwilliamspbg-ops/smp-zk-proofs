@@ -111,5 +111,6 @@ fn sign_proof<T: Serialize>(
         statement_digest,
         constraint_digest,
         signature,
+        backend_proof: None,
     })
 }
