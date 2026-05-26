@@ -27,7 +27,15 @@ harness = false
 default = []
 # Enable the Halo2 proving backend (opt-in). Add real backend deps when ready.
 halo2 = []
-groth16 = []
+groth16 = [
+	"ark-groth16",
+	"ark-bn254",
+	"ark-ff",
+	"ark-serialize",
+	"ark-relations",
+	"ark-std",
+	"rand",
+]
 
 [dependencies.halo2_proofs]
 version = "0.1"
@@ -46,5 +54,21 @@ optional = true
 
 [dependencies.ark-ff]
 version = "0.4"
+optional = true
+
+[dependencies.ark-serialize]
+version = "0.4"
+optional = true
+
+[dependencies.ark-relations]
+version = "0.4"
+optional = true
+
+[dependencies.ark-std]
+version = "0.4"
+optional = true
+
+[dependencies.rand]
+version = "0.8"
 optional = true
 
