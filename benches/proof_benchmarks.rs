@@ -31,6 +31,12 @@ fn bench_location(c: &mut Criterion) {
     c.bench_function("verify_location", |b| {
         b.iter(|| verify_location_proof(&verification_key, &public_inputs, &proof).expect("verify"))
     });
+
+    // Measure serialized backend proof size when present (feature-gated)
+    if let Some(bytes) = proof.backend_proof.as_ref() {
+        let size = bytes.len();
+        println!("backend proof size (location): {} bytes", size);
+    }
 }
 
 fn bench_training(c: &mut Criterion) {
@@ -52,6 +58,11 @@ fn bench_training(c: &mut Criterion) {
     c.bench_function("verify_training", |b| {
         b.iter(|| verify_training_proof(&verification_key, &public_inputs, &proof).expect("verify"))
     });
+
+    if let Some(bytes) = proof.backend_proof.as_ref() {
+        let size = bytes.len();
+        println!("backend proof size (training): {} bytes", size);
+    }
 }
 
 criterion_group!(benches, bench_location, bench_training);
