@@ -35,6 +35,7 @@ groth16 = [
 	"ark-relations",
 	"ark-std",
 	"rand",
+	"ark-r1cs-std",
 ]
 
 [dependencies.ark-r1cs-std]
