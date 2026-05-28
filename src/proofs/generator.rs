@@ -52,7 +52,8 @@ pub fn prove_location_halo2(
     private_witness: &LocationPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
     // Build a Halo2 proof (scaffold) and wrap it into the existing `Proof` type.
-    let proof_bytes = crate::proofs::halo2_backend::prove_location_halo2(public_inputs, private_witness)?;
+    let proof_bytes =
+        crate::proofs::halo2_backend::prove_location_halo2(public_inputs, private_witness)?;
     let report = LocationCircuit.evaluate(public_inputs, private_witness)?;
     let statement_digest = utils::hash_serializable(public_inputs)?;
     let constraint_digest = report.digest()?;
@@ -73,7 +74,8 @@ pub fn prove_training_halo2(
     public_inputs: &TrainingPublicInputs,
     private_witness: &TrainingPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
-    let proof_bytes = crate::proofs::halo2_backend::prove_training_halo2(public_inputs, private_witness)?;
+    let proof_bytes =
+        crate::proofs::halo2_backend::prove_training_halo2(public_inputs, private_witness)?;
     let report = TrainingCircuit.evaluate(public_inputs, private_witness)?;
     let statement_digest = utils::hash_serializable(public_inputs)?;
     let constraint_digest = report.digest()?;
@@ -94,7 +96,8 @@ pub fn prove_location_groth16(
     public_inputs: &LocationPublicInputs,
     private_witness: &LocationPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
-    let proof_bytes = crate::proofs::groth16_backend::prove_location_groth16(public_inputs, private_witness)?;
+    let proof_bytes =
+        crate::proofs::groth16_backend::prove_location_groth16(public_inputs, private_witness)?;
     let report = LocationCircuit.evaluate(public_inputs, private_witness)?;
     let statement_digest = utils::hash_serializable(public_inputs)?;
     let constraint_digest = report.digest()?;
@@ -115,7 +118,8 @@ pub fn prove_training_groth16(
     public_inputs: &TrainingPublicInputs,
     private_witness: &TrainingPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
-    let proof_bytes = crate::proofs::groth16_backend::prove_training_groth16(public_inputs, private_witness)?;
+    let proof_bytes =
+        crate::proofs::groth16_backend::prove_training_groth16(public_inputs, private_witness)?;
     let report = TrainingCircuit.evaluate(public_inputs, private_witness)?;
     let statement_digest = utils::hash_serializable(public_inputs)?;
     let constraint_digest = report.digest()?;

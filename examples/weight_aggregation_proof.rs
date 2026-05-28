@@ -22,9 +22,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("training proof verified");
     println!("circuit: {:?}", decoded_proof.circuit);
     println!("scheme: {:?}", decoded_proof.scheme);
-    println!(
-        "serialized proof size: {} bytes",
-        proof_bytes.len()
-    );
+    println!("serialized proof size: {} bytes", proof_bytes.len());
     Ok(())
 }

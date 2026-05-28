@@ -11,12 +11,14 @@
 //! while the real `LocationR1CS` integration is finalized.
 
 use crate::ZkProofError;
-use crate::proofs::types::{LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs};
+use crate::proofs::types::{
+    LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs,
+};
 
 use ark_bn254::{Bn254, Fr};
 use ark_groth16::{Groth16, Proof as GrothProof, VerifyingKey, prepare_verifying_key};
 use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
-use ark_serialize::{CanonicalSerialize, CanonicalDeserialize, Compress, Validate};
+use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Compress, Validate};
 use rand::rngs::OsRng;
 use std::io::Cursor;
 
@@ -30,7 +32,8 @@ impl ConstraintSynthesizer<Fr> for EmptyCircuit {
 
 fn serialize_with_len<T: CanonicalSerialize>(obj: &T) -> Result<Vec<u8>, ZkProofError> {
     let mut v = Vec::new();
-    obj.serialize_uncompressed(&mut v).map_err(|e| ZkProofError::VerificationFailed(format!("serialize error: {e}")))?;
+    obj.serialize_uncompressed(&mut v)
+        .map_err(|e| ZkProofError::VerificationFailed(format!("serialize error: {e}")))?;
     Ok(v)
 }
 
@@ -57,13 +60,16 @@ pub fn prove_location_groth16(
     let params = Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit, &mut rng)
         .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
 
-    let proof = Groth16::<Bn254>::create_random_proof_with_reduction(EmptyCircuit, &params, &mut rng)
-        .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
+    let proof =
+        Groth16::<Bn254>::create_random_proof_with_reduction(EmptyCircuit, &params, &mut rng)
+            .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
 
     let vk = params.vk;
     let vk_bytes = serialize_with_len(&vk)?;
     let mut proof_bytes = Vec::new();
-    proof.serialize_uncompressed(&mut proof_bytes).map_err(|e| ZkProofError::VerificationFailed(format!("proof serialize: {e}")))?;
+    proof
+        .serialize_uncompressed(&mut proof_bytes)
+        .map_err(|e| ZkProofError::VerificationFailed(format!("proof serialize: {e}")))?;
 
     let vk_len = (vk_bytes.len() as u32).to_le_bytes();
     let mut out = Vec::with_capacity(4 + vk_bytes.len() + proof_bytes.len());
@@ -78,7 +84,22 @@ pub fn prove_training_groth16(
     _public_inputs: &TrainingPublicInputs,
     _private_witness: &TrainingPrivateWitness,
 ) -> Result<Vec<u8>, ZkProofError> {
-    prove_location_groth16(&LocationPublicInputs { bounding_box: crate::proofs::types::BoundingBox { x_min: 0, x_max: 0, y_min: 0, y_max: 0 }, coordinate_commitment: [0u8; 32] }, &LocationPrivateWitness { x: 0, y: 0, blinding: [0u8; 32] })
+    prove_location_groth16(
+        &LocationPublicInputs {
+            bounding_box: crate::proofs::types::BoundingBox {
+                x_min: 0,
+                x_max: 0,
+                y_min: 0,
+                y_max: 0,
+            },
+            coordinate_commitment: [0u8; 32],
+        },
+        &LocationPrivateWitness {
+            x: 0,
+            y: 0,
+            blinding: [0u8; 32],
+        },
+    )
 }
 
 /// Verify a serialized Groth16 proof for the location circuit (EmptyCircuit).
@@ -88,11 +109,15 @@ pub fn verify_location_groth16(
     proof_blob: &[u8],
 ) -> Result<(), ZkProofError> {
     if proof_blob.len() < 4 {
-        return Err(ZkProofError::VerificationFailed("proof blob too short".to_owned()));
+        return Err(ZkProofError::VerificationFailed(
+            "proof blob too short".to_owned(),
+        ));
     }
     let vk_len = u32::from_le_bytes(proof_blob[0..4].try_into().unwrap()) as usize;
     if proof_blob.len() < 4 + vk_len {
-        return Err(ZkProofError::VerificationFailed("invalid proof blob".to_owned()));
+        return Err(ZkProofError::VerificationFailed(
+            "invalid proof blob".to_owned(),
+        ));
     }
     let vk_bytes = &proof_blob[4..4 + vk_len];
     let proof_bytes = &proof_blob[4 + vk_len..];
@@ -110,7 +135,9 @@ pub fn verify_location_groth16(
     if verified {
         Ok(())
     } else {
-        Err(ZkProofError::VerificationFailed("proof did not verify".to_owned()))
+        Err(ZkProofError::VerificationFailed(
+            "proof did not verify".to_owned(),
+        ))
     }
 }
 
@@ -121,5 +148,17 @@ pub fn verify_training_groth16(
     proof_bytes: &[u8],
 ) -> Result<(), ZkProofError> {
     let _ = (verification_key, public_inputs);
-    verify_location_groth16(&[], &LocationPublicInputs { bounding_box: crate::proofs::types::BoundingBox { x_min: 0, x_max: 0, y_min: 0, y_max: 0 }, coordinate_commitment: [0u8; 32] }, proof_bytes)
+    verify_location_groth16(
+        &[],
+        &LocationPublicInputs {
+            bounding_box: crate::proofs::types::BoundingBox {
+                x_min: 0,
+                x_max: 0,
+                y_min: 0,
+                y_max: 0,
+            },
+            coordinate_commitment: [0u8; 32],
+        },
+        proof_bytes,
+    )
 }

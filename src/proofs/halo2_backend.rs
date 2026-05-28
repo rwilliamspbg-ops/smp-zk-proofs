@@ -8,7 +8,9 @@
 #![cfg(feature = "halo2")]
 
 use crate::ZkProofError;
-use crate::proofs::types::{LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs};
+use crate::proofs::types::{
+    LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs,
+};
 
 // Re-exported helpers and a minimal API surface so generator/verifier can call in.
 // TODO: replace the placeholder types below with real `halo2_proofs` circuit and proof types.

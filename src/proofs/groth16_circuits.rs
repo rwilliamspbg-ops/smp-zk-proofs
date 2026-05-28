@@ -2,9 +2,9 @@
 #![cfg(feature = "groth16")]
 
 use ark_bn254::Fr;
-use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
-use ark_r1cs_std::prelude::*;
 use ark_r1cs_std::fields::fp::FpVar;
+use ark_r1cs_std::prelude::*;
+use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 
 // LocationR1CS enforces private x,y are within public bounds using UInt32
 // comparison gadgets. The circuit intentionally does NOT check the
