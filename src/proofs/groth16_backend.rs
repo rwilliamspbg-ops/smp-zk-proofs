@@ -30,7 +30,7 @@ impl ConstraintSynthesizer<Fr> for EmptyCircuit {
 
 fn serialize_with_len<T: CanonicalSerialize>(obj: &T) -> Result<Vec<u8>, ZkProofError> {
     let mut v = Vec::new();
-    obj.serialize(&mut v).map_err(|e| ZkProofError::VerificationFailed(format!("serialize error: {e}")))?;
+    obj.serialize_uncompressed(&mut v).map_err(|e| ZkProofError::VerificationFailed(format!("serialize error: {e}")))?;
     Ok(v)
 }
 
@@ -63,7 +63,7 @@ pub fn prove_location_groth16(
     let vk = params.vk;
     let vk_bytes = serialize_with_len(&vk)?;
     let mut proof_bytes = Vec::new();
-    proof.serialize(&mut proof_bytes).map_err(|e| ZkProofError::VerificationFailed(format!("proof serialize: {e}")))?;
+    proof.serialize_uncompressed(&mut proof_bytes).map_err(|e| ZkProofError::VerificationFailed(format!("proof serialize: {e}")))?;
 
     let vk_len = (vk_bytes.len() as u32).to_le_bytes();
     let mut out = Vec::with_capacity(4 + vk_bytes.len() + proof_bytes.len());

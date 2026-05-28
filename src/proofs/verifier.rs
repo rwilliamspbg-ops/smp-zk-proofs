@@ -15,27 +15,23 @@ pub fn verify_location_proof(
     // If the proof is a Halo2 proof and the feature is enabled, route to halo2 verifier.
     #[cfg(feature = "halo2")]
     {
-        if proof.scheme == ProofScheme::Halo2V1 {
-            if let Some(bytes) = &proof.backend_proof {
+        if proof.scheme == ProofScheme::Halo2V1 && let Some(bytes) = &proof.backend_proof {
                 return crate::proofs::halo2_backend::verify_location_halo2(
                     &verification_key.verifying_key,
                     public_inputs,
                     bytes,
                 );
-            }
         }
     }
 
     #[cfg(feature = "groth16")]
     {
-        if proof.scheme == ProofScheme::Groth16V1 {
-            if let Some(bytes) = &proof.backend_proof {
+        if proof.scheme == ProofScheme::Groth16V1 && let Some(bytes) = &proof.backend_proof {
                 return crate::proofs::groth16_backend::verify_location_groth16(
                     &verification_key.verifying_key,
                     public_inputs,
                     bytes,
                 );
-            }
         }
     }
 
@@ -54,27 +50,23 @@ pub fn verify_training_proof(
 ) -> Result<(), ZkProofError> {
     #[cfg(feature = "halo2")]
     {
-        if proof.scheme == ProofScheme::Halo2V1 {
-            if let Some(bytes) = &proof.backend_proof {
+        if proof.scheme == ProofScheme::Halo2V1 && let Some(bytes) = &proof.backend_proof {
                 return crate::proofs::halo2_backend::verify_training_halo2(
                     &verification_key.verifying_key,
                     public_inputs,
                     bytes,
                 );
-            }
         }
     }
 
     #[cfg(feature = "groth16")]
     {
-        if proof.scheme == ProofScheme::Groth16V1 {
-            if let Some(bytes) = &proof.backend_proof {
+        if proof.scheme == ProofScheme::Groth16V1 && let Some(bytes) = &proof.backend_proof {
                 return crate::proofs::groth16_backend::verify_training_groth16(
                     &verification_key.verifying_key,
                     public_inputs,
                     bytes,
                 );
-            }
         }
     }
 

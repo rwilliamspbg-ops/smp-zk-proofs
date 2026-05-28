@@ -47,7 +47,7 @@ pub fn prove_training(
 
 #[cfg(feature = "halo2")]
 pub fn prove_location_halo2(
-    context: &ProvingContext,
+    _context: &ProvingContext,
     public_inputs: &LocationPublicInputs,
     private_witness: &LocationPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
@@ -69,7 +69,7 @@ pub fn prove_location_halo2(
 
 #[cfg(feature = "halo2")]
 pub fn prove_training_halo2(
-    context: &ProvingContext,
+    _context: &ProvingContext,
     public_inputs: &TrainingPublicInputs,
     private_witness: &TrainingPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
@@ -90,7 +90,7 @@ pub fn prove_training_halo2(
 
 #[cfg(feature = "groth16")]
 pub fn prove_location_groth16(
-    context: &ProvingContext,
+    _context: &ProvingContext,
     public_inputs: &LocationPublicInputs,
     private_witness: &LocationPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
@@ -111,7 +111,7 @@ pub fn prove_location_groth16(
 
 #[cfg(feature = "groth16")]
 pub fn prove_training_groth16(
-    context: &ProvingContext,
+    _context: &ProvingContext,
     public_inputs: &TrainingPublicInputs,
     private_witness: &TrainingPrivateWitness,
 ) -> Result<Proof, ZkProofError> {
