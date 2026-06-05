@@ -150,7 +150,7 @@ mod tests {
             "Groth16 proof generation should succeed"
         );
         let proof_bytes = proof_bytes.unwrap();
-        assert!(proof_bytes.len() > 0);
+        assert!(!proof_bytes.is_empty());
 
         // Verify Groth16 proof
         let result = groth16_backend::verify_location_groth16(&[], &public_inputs, &proof_bytes);
