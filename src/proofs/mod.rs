@@ -5,6 +5,8 @@ pub mod groth16_backend;
 pub mod groth16_circuits;
 #[cfg(feature = "halo2")]
 pub mod halo2_backend;
+#[cfg(feature = "halo2")]
+pub mod halo2_circuits;
 pub mod types;
 pub mod verifier;
 

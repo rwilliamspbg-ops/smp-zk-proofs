@@ -10,6 +10,7 @@ use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisE
 // comparison gadgets. The circuit intentionally does NOT check the
 // coordinate_commitment yet; that will be added in Phase B with a
 // Pedersen/Poseidon gadget.
+#[derive(Clone)]
 pub struct LocationR1CS {
     pub x: u32,
     pub y: u32,
