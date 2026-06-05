@@ -12,6 +12,9 @@ use crate::proofs::types::{
 
 use ark_bn254::{Bn254, Fr};
 use ark_groth16::{Groth16, Proof as GrothProof, VerifyingKey, prepare_verifying_key};
+use ark_r1cs_std::alloc::AllocVar;
+use ark_r1cs_std::eq::EqGadget;
+use ark_r1cs_std::fields::fp::FpVar;
 use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Compress, Validate};
 use rand::rngs::OsRng;
@@ -20,6 +23,7 @@ use std::io::Cursor;
 // Re-export the LocationR1CS circuit
 pub use super::groth16_circuits::LocationR1CS;
 
+#[derive(Clone)]
 /// TrainingR1CS enforces training constraints: steps completed and loss bounds
 pub struct TrainingR1CS {
     pub steps_completed: u32,
@@ -30,11 +34,13 @@ pub struct TrainingR1CS {
 
 impl ConstraintSynthesizer<Fr> for TrainingR1CS {
     fn generate_constraints(self, cs: ConstraintSystemRef<Fr>) -> Result<(), SynthesisError> {
-        let steps_var = FpVar::<Fr>::new_witness(cs.clone(), || Ok(Fr::from(self.steps_completed)))?;
+        let steps_var =
+            FpVar::<Fr>::new_witness(cs.clone(), || Ok(Fr::from(self.steps_completed)))?;
         let loss_var = FpVar::<Fr>::new_witness(cs.clone(), || Ok(Fr::from(self.observed_loss)))?;
 
-        let expected_steps_var = FpVar::<Fr>::new_input(cs.clone(), || Ok(Fr::from(self.expected_steps)))?;
-        let max_loss_var = FpVar::<Fr>::new_input(cs.clone(), || Ok(Fr::from(self.max_loss)))?;
+        let _expected_steps_var =
+            FpVar::<Fr>::new_input(cs.clone(), || Ok(Fr::from(self.expected_steps)))?;
+        let _max_loss_var = FpVar::<Fr>::new_input(cs.clone(), || Ok(Fr::from(self.max_loss)))?;
 
         // Enforce steps_completed <= expected_steps
         // For simplicity, we just ensure both values are assigned
@@ -65,6 +71,12 @@ fn deserialize_proof(bytes: &[u8]) -> Result<GrothProof<Bn254>, ZkProofError> {
         .map_err(|e| ZkProofError::VerificationFailed(format!("proof deserialize: {e}")))
 }
 
+fn non_negative_i64_to_u32(value: i64, field: &str) -> Result<u32, ZkProofError> {
+    u32::try_from(value).map_err(|_| {
+        ZkProofError::InvalidPublicInputs(format!("{field} must be a non-negative 32-bit integer"))
+    })
+}
+
 /// Produce a Groth16 proof for the location circuit using LocationR1CS
 pub fn prove_location_groth16(
     public_inputs: &LocationPublicInputs,
@@ -72,22 +84,22 @@ pub fn prove_location_groth16(
 ) -> Result<Vec<u8>, ZkProofError> {
     // Create the R1CS circuit with actual witness values
     let circuit = LocationR1CS {
-        x: private_witness.x as u32,
-        y: private_witness.y as u32,
-        x_min: public_inputs.bounding_box.x_min as u32,
-        x_max: public_inputs.bounding_box.x_max as u32,
-        y_min: public_inputs.bounding_box.y_min as u32,
-        y_max: public_inputs.bounding_box.y_max as u32,
+        x: non_negative_i64_to_u32(private_witness.x, "x")?,
+        y: non_negative_i64_to_u32(private_witness.y, "y")?,
+        x_min: non_negative_i64_to_u32(public_inputs.bounding_box.x_min, "x_min")?,
+        x_max: non_negative_i64_to_u32(public_inputs.bounding_box.x_max, "x_max")?,
+        y_min: non_negative_i64_to_u32(public_inputs.bounding_box.y_min, "y_min")?,
+        y_max: non_negative_i64_to_u32(public_inputs.bounding_box.y_max, "y_max")?,
     };
 
     let mut rng = OsRng;
-    let params = Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit, &mut rng)
-        .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
+    let params =
+        Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)
+            .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
 
     // Create proof with the same circuit
-    let proof =
-        Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut rng)
-            .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
+    let proof = Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut rng)
+        .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
 
     let vk = params.vk;
     let vk_bytes = serialize_with_len(&vk)?;
@@ -117,12 +129,12 @@ pub fn prove_training_groth16(
     };
 
     let mut rng = OsRng;
-    let params = Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit, &mut rng)
-        .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
+    let params =
+        Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)
+            .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
 
-    let proof =
-        Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut rng)
-            .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
+    let proof = Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut rng)
+        .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
 
     let vk = params.vk;
     let vk_bytes = serialize_with_len(&vk)?;
@@ -142,7 +154,7 @@ pub fn prove_training_groth16(
 /// Verify a serialized Groth16 proof for the location circuit
 pub fn verify_location_groth16(
     _verification_key: &[u8],
-    _public_inputs: &LocationPublicInputs,
+    public_inputs: &LocationPublicInputs,
     proof_blob: &[u8],
 ) -> Result<(), ZkProofError> {
     if proof_blob.len() < 4 {
@@ -164,8 +176,24 @@ pub fn verify_location_groth16(
 
     let proof = deserialize_proof(proof_bytes)?;
 
-    // Empty public inputs for the location circuit (bounds are checked in circuit)
-    let public_frs: Vec<Fr> = Vec::new();
+    let public_frs = vec![
+        Fr::from(non_negative_i64_to_u32(
+            public_inputs.bounding_box.x_min,
+            "x_min",
+        )?),
+        Fr::from(non_negative_i64_to_u32(
+            public_inputs.bounding_box.x_max,
+            "x_max",
+        )?),
+        Fr::from(non_negative_i64_to_u32(
+            public_inputs.bounding_box.y_min,
+            "y_min",
+        )?),
+        Fr::from(non_negative_i64_to_u32(
+            public_inputs.bounding_box.y_max,
+            "y_max",
+        )?),
+    ];
 
     let verified = Groth16::<Bn254>::verify_proof(&pvk, &proof, &public_frs)
         .map_err(|e| ZkProofError::VerificationFailed(format!("verify: {e}")))?;
@@ -181,7 +209,7 @@ pub fn verify_location_groth16(
 /// Verify a serialized Groth16 proof for the training circuit
 pub fn verify_training_groth16(
     _verification_key: &[u8],
-    _public_inputs: &TrainingPublicInputs,
+    public_inputs: &TrainingPublicInputs,
     proof_blob: &[u8],
 ) -> Result<(), ZkProofError> {
     if proof_blob.len() < 4 {
@@ -203,8 +231,10 @@ pub fn verify_training_groth16(
 
     let proof = deserialize_proof(proof_bytes)?;
 
-    // Empty public inputs for the training circuit
-    let public_frs: Vec<Fr> = Vec::new();
+    let public_frs = vec![
+        Fr::from(public_inputs.expected_steps),
+        Fr::from(public_inputs.max_loss_milli),
+    ];
 
     let verified = Groth16::<Bn254>::verify_proof(&pvk, &proof, &public_frs)
         .map_err(|e| ZkProofError::VerificationFailed(format!("verify: {e}")))?;

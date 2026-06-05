@@ -7,10 +7,10 @@
 #![cfg(feature = "halo2")]
 
 use crate::ZkProofError;
+use crate::proofs::halo2_circuits::Halo2LocationCircuit;
 use crate::proofs::types::{
     LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs,
 };
-use crate::proofs::halo2_circuits::{Halo2LocationCircuit, Halo2TrainingCircuit};
 
 /// Produce a Halo2 proof for the location circuit.
 /// Returns the serialized proof bytes on success.
@@ -20,7 +20,7 @@ pub fn prove_location_halo2(
 ) -> Result<Vec<u8>, ZkProofError> {
     // Validate bounding box first
     Halo2LocationCircuit::validate_bounding_box(&public_inputs.bounding_box)?;
-    
+
     // Use the internal proof generation with MockProver
     super::halo2_circuits::prove_location_halo2_internal(public_inputs, private_witness)
 }
@@ -42,11 +42,6 @@ pub fn verify_location_halo2(
     // For now, check if proof marker is valid
     if proof_bytes == b"halo2_location_proof_valid" {
         // Re-run circuit validation to verify
-        let dummy_witness = LocationPrivateWitness {
-            x: 0,
-            y: 0,
-            blinding: [0u8; 32],
-        };
         Halo2LocationCircuit::validate_bounding_box(&public_inputs.bounding_box)?;
         Ok(())
     } else {
@@ -58,8 +53,8 @@ pub fn verify_location_halo2(
 
 /// Verify a serialized Halo2 proof for the training circuit.
 pub fn verify_training_halo2(
-    verification_key: &[u8],
-    public_inputs: &TrainingPublicInputs,
+    _verification_key: &[u8],
+    _public_inputs: &TrainingPublicInputs,
     proof_bytes: &[u8],
 ) -> Result<(), ZkProofError> {
     if proof_bytes == b"halo2_training_proof_valid" {
