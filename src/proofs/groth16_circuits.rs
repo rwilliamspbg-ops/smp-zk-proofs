@@ -1,5 +1,4 @@
 //! R1CS circuits for arkworks/Groth16 integration (compiled under `groth16`).
-#![cfg(feature = "groth16")]
 
 use ark_bn254::Fr;
 use ark_r1cs_std::fields::fp::FpVar;

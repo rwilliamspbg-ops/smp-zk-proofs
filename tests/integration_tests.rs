@@ -160,6 +160,7 @@ mod tests {
 
     #[test]
     #[cfg(feature = "halo2")]
+    #[allow(deprecated)]
     fn test_halo2_location_proof() {
         use smp_zk_proofs::proofs::halo2_backend;
 

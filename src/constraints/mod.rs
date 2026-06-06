@@ -13,9 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{ZkProofError, proofs::types::CircuitKind, utils};
 
-#[allow(missing_docs)]
 pub use location_circuit::LocationCircuit;
-#[allow(missing_docs)]
 pub use training_circuit::TrainingCircuit;
 
 /// Trait implemented by every circuit in this crate.

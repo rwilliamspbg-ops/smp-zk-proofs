@@ -12,8 +12,6 @@
 //! this feature in production. A real `halo2_proofs` circuit integration is
 //! tracked as future work.
 
-#![cfg(feature = "halo2")]
-
 use crate::ZkProofError;
 use crate::proofs::halo2_circuits::Halo2LocationCircuit;
 use crate::proofs::types::{

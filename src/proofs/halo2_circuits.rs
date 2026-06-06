@@ -1,4 +1,3 @@
-#![cfg(feature = "halo2")]
 //! Halo2 circuit-facing helpers.
 
 use crate::ZkProofError;

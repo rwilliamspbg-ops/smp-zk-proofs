@@ -3,8 +3,6 @@
 //! This module provides real Groth16 proof generation and verification
 //! using the LocationR1CS circuit for bounding box constraints.
 
-#![cfg(feature = "groth16")]
-
 use crate::ZkProofError;
 use crate::proofs::types::{
     LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs,
