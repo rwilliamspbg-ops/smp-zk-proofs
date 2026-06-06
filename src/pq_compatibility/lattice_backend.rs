@@ -33,7 +33,7 @@ impl LatticeParams {
     /// Get parameters for a specific security level
     pub fn from_security_level(bits: u32) -> Self {
         match bits {
-            1..=128 => Self {
+            ..=128 => Self {
                 n: 512,
                 q: 3329,
                 eta: 2.0,
