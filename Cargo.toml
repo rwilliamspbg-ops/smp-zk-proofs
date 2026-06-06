@@ -11,7 +11,7 @@ repository = "https://github.com/rwilliamspbg-ops/smp-zk-proofs"
 license = "MIT"
 readme = "README.md"
 keywords = ["cryptography", "zkp", "spatial-networks", "halo2", "arkworks"]
-categories = ["cryptography::cryptography", "science"]
+categories = ["cryptography", "science"]
 
 [dependencies]
 bincode = "1.3"
