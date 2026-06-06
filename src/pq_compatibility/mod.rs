@@ -1,31 +1,38 @@
 //! Post-Quantum Cryptography Compatibility Module
-//! 
+//!
 //! This module provides a comprehensive post-quantum cryptography (PQC) integration
 //! for zero-knowledge proofs, supporting multiple quantum-resistant backends including
 //! lattice-based, hash-based, and code-based cryptographic schemes.
-//! 
+//!
 //! ## Features
-//! 
+//!
 //! - **Multiple PQC Backends**: Lattice (Kyber-inspired), Hash (SHA-3/Keccak), Code-based
 //! - **Hybrid Mode**: Classical + PQC proofs for gradual migration
 //! - **Migration Tools**: Automated tools for transitioning existing proofs
 //! - **Security Metrics**: NIST security level tracking and validation
-//! 
+//!
 //! ## Example Usage
-//! 
+//!
 //! ```rust
 //! use smp_zk_proofs::pq_compatibility::{
 //!     PqcBackendType, PqcConfig, generate_pqc_location_proof, verify_pqc_location_proof
 //! };
-//! 
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Configure PQC backend with 128-bit security
 //! let config = PqcConfig::new(PqcBackendType::Lattice, 128);
-//! 
+//!
+//! let location_data = b"test_location";
+//! let public_inputs = b"public_inputs";
+//!
 //! // Generate a PQC location proof
-//! let proof = generate_pqc_location_proof(&location_data, &config)?;
-//! 
+//! let proof = generate_pqc_location_proof(location_data, public_inputs, &config)?;
+//!
 //! // Verify the proof
-//! let is_valid = verify_pqc_location_proof(&proof, &public_inputs, &config)?;
+//! let is_valid = verify_pqc_location_proof(&proof, public_inputs, &config)?;
+//! assert!(is_valid);
+//! # Ok(())
+//! # }
 //! ```
 
 /// Status of the post-quantum backend implementation
@@ -81,10 +88,13 @@ impl PqcBackendType {
             PqcBackendType::Hybrid => 3,  // Minimum of components
         }
     }
-    
+
     /// Check if this backend is production-ready
     pub fn is_production_ready(&self) -> bool {
-        matches!(self, PqcBackendType::Lattice | PqcBackendType::Hash | PqcBackendType::Hybrid)
+        matches!(
+            self,
+            PqcBackendType::Lattice | PqcBackendType::Hash | PqcBackendType::Hybrid
+        )
     }
 }
 
@@ -111,29 +121,32 @@ impl PqcConfig {
             custom_params: std::collections::HashMap::new(),
         }
     }
-    
+
     /// Enable hybrid mode
     pub fn with_hybrid_mode(mut self, enabled: bool) -> Self {
         self.hybrid_mode = enabled;
         self
     }
-    
+
     /// Add a custom parameter
     pub fn with_param(mut self, key: &str, value: &str) -> Self {
-        self.custom_params.insert(key.to_string(), value.to_string());
+        self.custom_params
+            .insert(key.to_string(), value.to_string());
         self
     }
-    
+
     /// Validate the configuration
     pub fn validate(&self) -> Result<(), PqcError> {
         if self.security_level_bits < 128 {
-            return Err(PqcError::InsufficientSecurityLevel(self.security_level_bits));
+            return Err(PqcError::InsufficientSecurityLevel(
+                self.security_level_bits,
+            ));
         }
-        
+
         if !self.backend_type.is_production_ready() && !cfg!(test) {
             return Err(PqcError::BackendNotReady(self.backend_type));
         }
-        
+
         Ok(())
     }
 }
@@ -149,22 +162,22 @@ impl Default for PqcConfig {
 pub enum PqcError {
     #[error("Insufficient security level: {0} bits (minimum 128)")]
     InsufficientSecurityLevel(u32),
-    
+
     #[error("Backend {0:?} is not ready for production use")]
     BackendNotReady(PqcBackendType),
-    
+
     #[error("Proof generation failed: {0}")]
     ProofGenerationFailed(String),
-    
+
     #[error("Proof verification failed: {0}")]
     VerificationFailed(String),
-    
+
     #[error("Invalid proof format: {0}")]
     InvalidProofFormat(String),
-    
+
     #[error("Serialization error: {0}")]
     SerializationError(String),
-    
+
     #[error("Hybrid proof mismatch: {0}")]
     HybridMismatch(String),
 }
@@ -172,21 +185,20 @@ pub enum PqcError {
 /// Result type for PQC operations
 pub type PqcResult<T> = Result<T, PqcError>;
 
-// Re-export backend implementations
-pub mod lattice_backend;
-pub mod pq_backends;
+// Sub-modules
 pub mod hybrid_mode;
+pub mod lattice_backend;
 pub mod migration;
+pub mod pq_backends;
 
-pub use lattice_backend::*;
-pub use pq_backends::*;
 pub use hybrid_mode::*;
 pub use migration::*;
+pub use pq_backends::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_pqc_config_creation() {
         let config = PqcConfig::new(PqcBackendType::Lattice, 128);
@@ -194,23 +206,26 @@ mod tests {
         assert_eq!(config.security_level_bits, 128);
         assert!(!config.hybrid_mode);
     }
-    
+
     #[test]
     fn test_pqc_config_validation() {
         let config = PqcConfig::new(PqcBackendType::Lattice, 128);
         assert!(config.validate().is_ok());
-        
+
         let weak_config = PqcConfig::new(PqcBackendType::Lattice, 64);
         assert!(weak_config.validate().is_err());
     }
-    
+
     #[test]
     fn test_hybrid_mode_config() {
         let config = PqcConfig::new(PqcBackendType::Lattice, 128)
             .with_hybrid_mode(true)
             .with_param("optimization", "speed");
-        
+
         assert!(config.hybrid_mode);
-        assert_eq!(config.custom_params.get("optimization"), Some(&"speed".to_string()));
+        assert_eq!(
+            config.custom_params.get("optimization"),
+            Some(&"speed".to_string())
+        );
     }
 }
