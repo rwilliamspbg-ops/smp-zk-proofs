@@ -1,21 +1,17 @@
-use ark_bls12_381::Bls12_381;
-use ark_crypto_primitives::snark::SNARK;
-use ark_groth16::Groth16;
+use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+use serde::Serialize;
 
 use crate::{
     ZkProofError,
-    proofs::types::*,
+    proofs::{transcript_message, types::*},
     utils,
 };
 
 pub fn verify_location_proof(
-    verification_key: &ZkSnarkVerifyingKey,
+    verification_key: &VerificationKey,
     public_inputs: &LocationPublicInputs,
     proof: &Proof,
 ) -> Result<(), ZkProofError> {
-<<<<<<< HEAD
-    verify_zk_snark_proof(
-=======
     // If the proof is a Halo2 proof and the feature is enabled, route to halo2 verifier.
     #[cfg(feature = "halo2")]
     {
@@ -44,7 +40,6 @@ pub fn verify_location_proof(
     }
 
     verify_proof(
->>>>>>> origin/main
         verification_key,
         CircuitKind::Location,
         public_inputs,
@@ -53,13 +48,10 @@ pub fn verify_location_proof(
 }
 
 pub fn verify_training_proof(
-    verification_key: &ZkSnarkVerifyingKey,
+    verification_key: &VerificationKey,
     public_inputs: &TrainingPublicInputs,
     proof: &Proof,
 ) -> Result<(), ZkProofError> {
-<<<<<<< HEAD
-    verify_zk_snark_proof(
-=======
     #[cfg(feature = "halo2")]
     {
         if proof.scheme == ProofScheme::Halo2V1
@@ -87,7 +79,6 @@ pub fn verify_training_proof(
     }
 
     verify_proof(
->>>>>>> origin/main
         verification_key,
         CircuitKind::Training,
         public_inputs,
@@ -95,8 +86,8 @@ pub fn verify_training_proof(
     )
 }
 
-fn verify_zk_snark_proof<T: serde::Serialize>(
-    vk: &ZkSnarkVerifyingKey,
+fn verify_proof<T: Serialize>(
+    verification_key: &VerificationKey,
     expected_circuit: CircuitKind,
     public_inputs: &T,
     proof: &Proof,
@@ -108,7 +99,7 @@ fn verify_zk_snark_proof<T: serde::Serialize>(
         )));
     }
 
-    if proof.scheme != ProofScheme::Groth16Bls12_381 {
+    if proof.scheme != ProofScheme::DevelopmentSignedTranscriptV1 {
         return Err(ZkProofError::VerificationFailed(
             "unsupported proof scheme".to_owned(),
         ));
@@ -121,37 +112,26 @@ fn verify_zk_snark_proof<T: serde::Serialize>(
         ));
     }
 
-    // Verify the zk-SNARK proof
-    let zk_proof = proof.zk_snark_proof.as_ref()
-        .ok_or_else(|| ZkProofError::VerificationFailed("missing zk-SNARK proof".to_string()))?;
-    
-    let ark_proof = zk_proof.to_arkworks_proof()?;
-    let ark_vk = vk.to_arkworks_vk()?;
-    
-    // Prepare public inputs for verification
-    let mut public_input_values = Vec::new();
-    
-    match expected_circuit {
-        CircuitKind::Location => {
-            let loc_inputs = public_inputs.downcast_ref::<LocationPublicInputs>()
-                .ok_or_else(|| ZkProofError::VerificationFailed("invalid public input type for location circuit".to_string()))?;
-            
-            public_input_values.push(ark_ff::Fp::from(loc_inputs.bounding_box.x_min as u64));
-            public_input_values.push(ark_ff::Fp::from(loc_inputs.bounding_box.x_max as u64));
-            public_input_values.push(ark_ff::Fp::from(loc_inputs.bounding_box.y_min as u64));
-            public_input_values.push(ark_ff::Fp::from(loc_inputs.bounding_box.y_max as u64));
-        },
-        CircuitKind::Training => {
-            let train_inputs = public_inputs.downcast_ref::<TrainingPublicInputs>()
-                .ok_or_else(|| ZkProofError::VerificationFailed("invalid public input type for training circuit".to_string()))?;
-            
-            public_input_values.push(ark_ff::Fp::from(train_inputs.expected_steps as u64));
-            public_input_values.push(ark_ff::Fp::from(train_inputs.max_loss_milli));
-        },
-    }
-    
-    Groth16::<Bls12_381>::verify_with_processed_vk(&ark_vk, &public_input_values, &ark_proof)
-        .map_err(|e| ZkProofError::VerificationFailed(format!("zk-SNARK verification failed: {}", e)))?;
+    let message = transcript_message(
+        proof.circuit,
+        proof.scheme,
+        proof.statement_digest,
+        proof.constraint_digest,
+        public_inputs,
+    )?;
 
-    Ok(())
+    let signature_bytes: [u8; 64] = proof
+        .signature
+        .as_slice()
+        .try_into()
+        .map_err(|_| ZkProofError::VerificationFailed("invalid signature length".to_owned()))?;
+    let signature = Signature::from_bytes(&signature_bytes);
+    let verifying_key =
+        VerifyingKey::from_bytes(&verification_key.verifying_key).map_err(|error| {
+            ZkProofError::VerificationFailed(format!("invalid verification key: {error}"))
+        })?;
+
+    verifying_key.verify(&message, &signature).map_err(|error| {
+        ZkProofError::VerificationFailed(format!("signature verification failed: {error}"))
+    })
 }

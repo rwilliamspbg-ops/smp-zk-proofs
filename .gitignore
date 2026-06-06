@@ -1,72 +1,19 @@
-```
-<<<<<<< HEAD
-# Rust-specific ignores
-target/
-Cargo.lock
-
-# Dependencies
-vendor/
-
-# Logs and temp files
-*.log
-*.tmp
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Python caches (if any Python files exist in project)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-
-# Build outputs
-dist/
-build/
-=======
 # Compiled and build artifacts
 *.pyc
 __pycache__/
 *.o
 *.obj
->>>>>>> origin/main
 *.out
 *.exe
 *.dll
 *.so
-*.a
-<<<<<<< HEAD
 *.dylib
-
-# Testing
-.mypy_cache/
-.pytest_cache/
-.nyc_output/
-istanbul/
-=======
+*.a
 *.class
 
 # Dependencies
 node_modules/
+vendor/
 venv/
 .venv/
 .env
@@ -123,5 +70,3 @@ htmlcov/
 Cargo.lock
 target/
 **/*.rs.bk
->>>>>>> origin/main
-```

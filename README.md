@@ -1,30 +1,19 @@
 # smp-zk-proofs
 
-<<<<<<< HEAD
-`smp-zk-proofs` is a Rust library for verifiable aggregation proofs in distributed spatial networks using zk-SNARKs. It provides Groth16 proofs over the BLS12-381 curve, with support for location proofs and training verification, plus post-quantum compatibility layers.
-=======
 [![ci](https://github.com/rwilliamspbg-ops/smp-zk-proofs/actions/workflows/ci.yml/badge.svg)](https://github.com/rwilliamspbg-ops/smp-zk-proofs/actions/workflows/ci.yml)
 
 `smp-zk-proofs` is a Rust library for verifiable aggregation ledgers in distributed spatial networks. It provides a clean crate layout, deterministic proof-generation and verification flows, serialization helpers, runnable examples, and benchmark hooks so the repository can evolve toward Halo2/arkworks-backed zero-knowledge proofs without changing its public module boundaries.
 
 Prerequisites: Rust 1.95 or newer.
->>>>>>> origin/main
 
 ## What is being proven?
 
-The library implements two proving statements:
+The repository currently models two proving statements:
 
 - **Location proof**: a node knows secret coordinates `(x, y)` whose commitment lies inside a public bounding box.
 - **Training proof**: a node knows a committed local weight update whose step count matches a public training schedule and whose observed loss stays below a public threshold.
 
-## Backend: Groth16 with BLS12-381
-
-This library uses **arkworks** with **Groth16** zk-SNARKs over the **BLS12-381** pairing-friendly curve. The implementation includes:
-
-- Circuit-specific trusted setup for each circuit type
-- R1CS constraint generation for range and equality checks
-- Proof generation with cryptographic randomness
-- Efficient verification using preprocessed verifying keys
+The current backend is a **development signed-transcript backend**. It validates circuit constraints locally, commits to the public statement, and signs the resulting transcript for downstream verification. This keeps the code paths, serialization, and examples stable while a full Halo2/arkworks proving backend is integrated.
 
 ## Repository layout
 
@@ -71,25 +60,13 @@ smp-zk-proofs/
 
 ### Proof object
 
-```rust
+```text
 pub struct Proof {
     pub circuit: CircuitKind,
-    pub scheme: ProofScheme,  // Groth16Bls12_381
+    pub scheme: ProofScheme,
     pub statement_digest: [u8; 32],
     pub constraint_digest: [u8; 32],
-    pub zk_snark_proof: Option<ZkSnarkProof>,  // Groth16 (a, b, c) elements
-}
-```
-
-### Verification Key
-
-```rust
-pub struct ZkSnarkVerifyingKey {
-    pub alpha_g1: Vec<u8>,
-    pub beta_g2: Vec<u8>,
-    pub gamma_g2: Vec<u8>,
-    pub delta_g2: Vec<u8>,
-    pub gamma_abc_g1: Vec<u8>,
+    pub signature: Vec<u8>,
 }
 ```
 
@@ -97,13 +74,12 @@ Proofs, verification keys, and public inputs support deterministic `bincode` ser
 
 ## Computational complexity
 
-For the Groth16 backend:
+For the current development backend:
 
-- **Setup**: O(n) where n is the number of constraints (one-time per circuit)
-- **Prove**: O(n) multi-scalar multiplications in G1/G2
-- **Verify**: O(1) pairing operations (typically ~3ms on modern hardware)
+- `prove_location` / `prove_training`: **O(1)** hashing + Ed25519 signing over small transcripts.
+- `verify_location_proof` / `verify_training_proof`: **O(1)** hashing + Ed25519 signature verification.
 
-The benchmark harness in `benches/proof_benchmarks.rs` tracks latency and memory usage.
+The benchmark harness in `benches/proof_benchmarks.rs` is ready to track latency as the backend evolves.
 
 ## Usage
 
@@ -111,14 +87,11 @@ The benchmark harness in `benches/proof_benchmarks.rs` tracks latency and memory
 
 ```rust
 use smp_zk_proofs::{
-    BoundingBox, LocationPrivateWitness, LocationPublicInputs, 
-    ProvingContext, prove_location, verify_location_proof,
+    BoundingBox, LocationPrivateWitness, LocationPublicInputs, ProvingContext,
+    prove_location, verify_location_proof,
 };
 
-// Setup the proving context (generates proving/verifying keys)
-let context = ProvingContext::setup()?;
-
-// Create witness and public inputs
+let context = ProvingContext::from_seed([7_u8; 32]);
 let witness = LocationPrivateWitness {
     x: 41,
     y: 12,
@@ -134,13 +107,9 @@ let public_inputs = LocationPublicInputs::from_witness(
     &witness,
 )?;
 
-// Generate proof
 let proof = prove_location(&context, &public_inputs, &witness)?;
-
-// Verify proof
-if let Some(vk) = context.location_verification_key() {
-    verify_location_proof(&vk, &public_inputs, &proof)?;
-}
+verify_location_proof(&context.verification_key(), &public_inputs, &proof)?;
+# Ok::<(), smp_zk_proofs::ZkProofError>(())
 ```
 
 ### Training proof
@@ -176,24 +145,8 @@ cargo run --example simple_location_proof
 cargo run --example weight_aggregation_proof
 ```
 
-## Post-quantum compatibility
+## Post-quantum placeholder
 
-<<<<<<< HEAD
-The `pq_compatibility` module provides:
-
-- **DilithiumBackend**: Integration point for Dilithium lattice-based signatures (NIST PQC standard)
-- **PQSecureAggregator**: Hash-based commitment schemes for aggregating multiple proofs
-- **DilithiumVerificationGadget**: Framework for verifying PQ signatures within zk-SNARK circuits
-
-These components enable hybrid classical/post-quantum security for long-term proof validity.
-
-## Security considerations
-
-- Trusted setup is circuit-specific; reuse parameters only for identical circuits
-- Blinding factors must be cryptographically random (32 bytes from CSPRNG)
-- For production use, consider multi-party computation (MPC) for trusted setup
-- PQ signatures provide additional security against quantum adversaries
-=======
 `src/pq_compatibility/` reserves a backend-neutral extension point so a future lattice- or hash-based proving system can be slotted in without rewriting the circuit-facing API.
 
 The current placeholder backend advertises a structured migration path: keep the public circuit API stable, add a concrete post-quantum backend behind the generator and verifier facades, and lock the transition down with compatibility tests before switching callers over.
@@ -204,4 +157,3 @@ The current placeholder backend advertises a structured migration path: keep the
 2. Verify `cargo test --doc --locked`, `cargo build --examples --locked`, and `cargo build --benches --locked`.
 3. Update `CHANGELOG.md` with the release summary.
 4. Publish the release tag from a clean working tree.
->>>>>>> origin/main

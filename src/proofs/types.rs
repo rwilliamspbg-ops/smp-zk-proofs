@@ -1,6 +1,3 @@
-use ark_bls12_381::{Bls12_381, Fr as BlsFr};
-use ark_groth16::{Proof as ArkProof, ProvingKey, VerifyingKey as ArkVerifyingKey};
-use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use serde::{Deserialize, Serialize};
 
 use crate::{ZkProofError, utils};
@@ -13,13 +10,9 @@ pub enum CircuitKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProofScheme {
-<<<<<<< HEAD
-    Groth16Bls12_381,
-=======
     DevelopmentSignedTranscriptV1,
     Halo2V1,
     Groth16V1,
->>>>>>> origin/main
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -134,110 +127,9 @@ pub struct TrainingPrivateWitness {
     pub blinding: [u8; 32],
 }
 
-/// Wrapper for arkworks Groth16 proof with serialization support
-#[derive(Debug, Clone)]
-pub struct ZkSnarkProof {
-    pub a: Vec<u8>,
-    pub b: Vec<u8>,
-    pub c: Vec<u8>,
-}
-
-impl ZkSnarkProof {
-    pub fn from_arkworks_proof(proof: &ArkProof<Bls12_381>) -> Result<Self, ZkProofError> {
-        let mut a_bytes = Vec::new();
-        let mut b_bytes = Vec::new();
-        let mut c_bytes = Vec::new();
-        
-        proof.a.serialize_compressed(&mut a_bytes)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        proof.b.serialize_compressed(&mut b_bytes)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        proof.c.serialize_compressed(&mut c_bytes)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        
-        Ok(Self {
-            a: a_bytes,
-            b: b_bytes,
-            c: c_bytes,
-        })
-    }
-    
-    pub fn to_arkworks_proof(&self) -> Result<ArkProof<Bls12_381>, ZkProofError> {
-        let a = <BlsFr as CanonicalDeserialize>::deserialize_compressed_unchecked(&self.a[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        let b = <ark_ec::AffinePointProjective<<Bls12_381 as ark_ec::pairing::Pairing>::G2> as CanonicalDeserialize>::deserialize_compressed(&self.b[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        let c = <BlsFr as CanonicalDeserialize>::deserialize_compressed_unchecked(&self.c[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        
-        Ok(ArkProof { a, b, c })
-    }
-}
-
-/// Wrapper for arkworks verifying key
-#[derive(Debug, Clone)]
-pub struct ZkSnarkVerifyingKey {
-    pub alpha_g1: Vec<u8>,
-    pub beta_g2: Vec<u8>,
-    pub gamma_g2: Vec<u8>,
-    pub delta_g2: Vec<u8>,
-    pub gamma_abc_g1: Vec<u8>,
-}
-
-impl ZkSnarkVerifyingKey {
-    pub fn from_arkworks_vk(vk: &ArkVerifyingKey<Bls12_381>) -> Result<Self, ZkProofError> {
-        let mut alpha_g1 = Vec::new();
-        let mut beta_g2 = Vec::new();
-        let mut gamma_g2 = Vec::new();
-        let mut delta_g2 = Vec::new();
-        let mut gamma_abc_g1 = Vec::new();
-        
-        vk.alpha_g1.serialize_compressed(&mut alpha_g1)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        vk.beta_g2.serialize_compressed(&mut beta_g2)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        vk.gamma_g2.serialize_compressed(&mut gamma_g2)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        vk.delta_g2.serialize_compressed(&mut delta_g2)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        vk.gamma_abc_g1.serialize_compressed(&mut gamma_abc_g1)
-            .map_err(|e| ZkProofError::SerializationFailed(e.to_string()))?;
-        
-        Ok(Self {
-            alpha_g1,
-            beta_g2,
-            gamma_g2,
-            delta_g2,
-            gamma_abc_g1,
-        })
-    }
-    
-    pub fn to_arkworks_vk(&self) -> Result<ArkVerifyingKey<Bls12_381>, ZkProofError> {
-        let alpha_g1 = <BlsFr as CanonicalDeserialize>::deserialize_compressed_unchecked(&self.alpha_g1[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        let beta_g2 = <ark_ec::AffinePointProjective<<Bls12_381 as ark_ec::pairing::Pairing>::G2> as CanonicalDeserialize>::deserialize_compressed(&self.beta_g2[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        let gamma_g2 = <ark_ec::AffinePointProjective<<Bls12_381 as ark_ec::pairing::Pairing>::G2> as CanonicalDeserialize>::deserialize_compressed(&self.gamma_g2[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        let delta_g2 = <ark_ec::AffinePointProjective<<Bls12_381 as ark_ec::pairing::Pairing>::G2> as CanonicalDeserialize>::deserialize_compressed(&self.delta_g2[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        let gamma_abc_g1_data: Vec<BlsFr> = ark_serialize::CanonicalDeserialize::deserialize_compressed_unchecked(&self.gamma_abc_g1[..])
-            .map_err(|e| ZkProofError::DeserializationFailed(e.to_string()))?;
-        
-        Ok(ArkVerifyingKey {
-            alpha_g1,
-            beta_g2,
-            gamma_g2,
-            delta_g2,
-            gamma_abc_g1: gamma_abc_g1_data,
-        })
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct VerificationKey {
     pub verifying_key: [u8; 32],
-    pub zk_snark_vk: Option<ZkSnarkVerifyingKey>,
 }
 
 impl VerificationKey {
@@ -256,13 +148,9 @@ pub struct Proof {
     pub scheme: ProofScheme,
     pub statement_digest: [u8; 32],
     pub constraint_digest: [u8; 32],
-<<<<<<< HEAD
-    pub zk_snark_proof: Option<ZkSnarkProof>,
-=======
     pub signature: Vec<u8>,
     #[serde(default)]
     pub backend_proof: Option<Vec<u8>>,
->>>>>>> origin/main
 }
 
 impl Proof {
