@@ -18,14 +18,21 @@
 //!     PqcBackendType, PqcConfig, generate_pqc_location_proof, verify_pqc_location_proof
 //! };
 //!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Configure PQC backend with 128-bit security
 //! let config = PqcConfig::new(PqcBackendType::Lattice, 128);
 //!
+//! let location_data = b"test_location";
+//! let public_inputs = b"public_inputs";
+//!
 //! // Generate a PQC location proof
-//! let proof = generate_pqc_location_proof(&location_data, &config)?;
+//! let proof = generate_pqc_location_proof(location_data, public_inputs, &config)?;
 //!
 //! // Verify the proof
-//! let is_valid = verify_pqc_location_proof(&proof, &public_inputs, &config)?;
+//! let is_valid = verify_pqc_location_proof(&proof, public_inputs, &config)?;
+//! assert!(is_valid);
+//! # Ok(())
+//! # }
 //! ```
 
 /// Status of the post-quantum backend implementation
