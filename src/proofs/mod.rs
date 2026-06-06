@@ -9,22 +9,3 @@ pub mod halo2_backend;
 pub mod halo2_circuits;
 pub mod types;
 pub mod verifier;
-
-use crate::{ZkProofError, utils};
-use serde::Serialize;
-
-pub(crate) fn transcript_message<T: Serialize>(
-    circuit: types::CircuitKind,
-    scheme: types::ProofScheme,
-    statement_digest: [u8; 32],
-    constraint_digest: [u8; 32],
-    public_inputs: &T,
-) -> Result<[u8; 32], ZkProofError> {
-    utils::hash_serializable(&(
-        circuit,
-        scheme,
-        statement_digest,
-        constraint_digest,
-        public_inputs,
-    ))
-}
