@@ -1,8 +1,7 @@
 use smp_zk_proofs::{
-    BoundingBox, LocationPrivateWitness, LocationPublicInputs, PlaceholderBackend,
-    PostQuantumBackend, PostQuantumBackendStatus, Proof, ProvingContext, TrainingPrivateWitness,
-    TrainingPublicInputs, prove_location, prove_training, verify_location_proof,
-    verify_training_proof,
+    prove_location, prove_training, verify_location_proof, verify_training_proof, BoundingBox,
+    LocationPrivateWitness, LocationPublicInputs, PlaceholderBackend, PostQuantumBackend,
+    PostQuantumBackendStatus, Proof, ProvingContext, TrainingPrivateWitness, TrainingPublicInputs,
 };
 
 #[test]
@@ -148,12 +147,10 @@ fn placeholder_backend_exposes_migration_plan() {
     assert_eq!(descriptor.status, PostQuantumBackendStatus::Reserved);
     assert!(descriptor.notes.contains("post-quantum proving backend"));
     assert_eq!(descriptor.migration_steps.len(), 3);
-    assert!(
-        descriptor
-            .migration_steps
-            .iter()
-            .any(|step| step.contains("public circuit API"))
-    );
+    assert!(descriptor
+        .migration_steps
+        .iter()
+        .any(|step| step.contains("public circuit API")));
 }
 
 #[test]

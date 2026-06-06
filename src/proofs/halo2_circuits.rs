@@ -1,12 +1,12 @@
 #![cfg(feature = "halo2")]
 //! Halo2 circuit-facing helpers.
 
-use crate::ZkProofError;
 use crate::constraints::{Circuit, LocationCircuit, TrainingCircuit};
 use crate::proofs::types::{
     BoundingBox, LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness,
     TrainingPublicInputs,
 };
+use crate::ZkProofError;
 
 /// Halo2 location circuit placeholder type.
 pub struct Halo2LocationCircuit;

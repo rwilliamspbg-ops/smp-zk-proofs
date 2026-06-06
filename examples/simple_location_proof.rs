@@ -1,6 +1,6 @@
 use smp_zk_proofs::{
-    BoundingBox, LocationPrivateWitness, LocationPublicInputs, Proof, ProvingContext,
-    prove_location, verify_location_proof,
+    prove_location, verify_location_proof, BoundingBox, LocationPrivateWitness,
+    LocationPublicInputs, Proof, ProvingContext,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
