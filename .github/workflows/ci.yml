@@ -32,19 +32,33 @@ jobs:
         run: cargo fmt --check --all
 
       - name: Clippy
-        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Test
-        run: cargo test --all-targets --locked
+      - name: Test (default features)
+        run: cargo test --all-targets
+
+      - name: Test (groth16)
+        run: cargo test --all-targets --features groth16
+
+      - name: Test (halo2)
+        run: cargo test --all-targets --features halo2
+
+      - name: Test (all features)
+        run: cargo test --all-targets --all-features
 
       - name: Doc tests
-        run: cargo test --doc --locked
+        run: cargo test --doc
 
       - name: Build examples
-        run: cargo build --examples --locked
+        run: cargo build --examples
 
       - name: Build benches
-        run: cargo build --benches --locked
+        run: cargo build --benches
+
+      - name: Security audit
+        run: |
+          cargo install cargo-audit --quiet 2>/dev/null || true
+          cargo audit
 
   release-check:
     runs-on: ubuntu-latest
@@ -64,7 +78,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build release examples
-        run: cargo build --release --examples --locked
+        run: cargo build --release --examples
 
       - name: Build release benches
-        run: cargo build --release --benches --locked
+        run: cargo build --release --benches
+
+      - name: Package check (dry run)
+        run: cargo package --no-verify

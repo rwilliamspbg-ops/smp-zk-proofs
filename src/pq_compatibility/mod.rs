@@ -109,26 +109,31 @@ pub struct PqcConfig {
     pub backend_type: PqcBackendType,
     /// Target security level in bits (e.g., 128, 192, 256)
     pub security_level_bits: u32,
-    /// Enable hybrid mode (classical + PQC)
-    pub hybrid_mode: bool,
+    /// Hybrid classical+PQC strategy. `None` means pure PQC (no hybrid).
+    pub hybrid_strategy: Option<crate::pq_compatibility::hybrid_mode::HybridStrategy>,
     /// Custom parameters for specific backends
     pub custom_params: std::collections::HashMap<String, String>,
 }
 
 impl PqcConfig {
     /// Create a new PQC configuration
+    /// Create a new PQC configuration with pure-PQC mode (no hybrid).
     pub fn new(backend_type: PqcBackendType, security_level_bits: u32) -> Self {
         Self {
             backend_type,
             security_level_bits,
-            hybrid_mode: false,
+            hybrid_strategy: None,
             custom_params: std::collections::HashMap::new(),
         }
     }
 
-    /// Enable hybrid mode
-    pub fn with_hybrid_mode(mut self, enabled: bool) -> Self {
-        self.hybrid_mode = enabled;
+    /// Set the hybrid classical+PQC strategy.
+    /// Pass `None` to disable hybrid mode (pure PQC).
+    pub fn with_hybrid_strategy(
+        mut self,
+        strategy: Option<crate::pq_compatibility::hybrid_mode::HybridStrategy>,
+    ) -> Self {
+        self.hybrid_strategy = strategy;
         self
     }
 
@@ -215,7 +220,7 @@ mod tests {
         let config = PqcConfig::new(PqcBackendType::Lattice, 128);
         assert_eq!(config.backend_type, PqcBackendType::Lattice);
         assert_eq!(config.security_level_bits, 128);
-        assert!(!config.hybrid_mode);
+        assert!(config.hybrid_strategy.is_none());
     }
 
     #[test]
@@ -229,11 +234,12 @@ mod tests {
 
     #[test]
     fn test_hybrid_mode_config() {
+        use crate::pq_compatibility::hybrid_mode::HybridStrategy;
         let config = PqcConfig::new(PqcBackendType::Lattice, 128)
-            .with_hybrid_mode(true)
+            .with_hybrid_strategy(Some(HybridStrategy::RequireBoth))
             .with_param("optimization", "speed");
 
-        assert!(config.hybrid_mode);
+        assert!(config.hybrid_strategy.is_some());
         assert_eq!(
             config.custom_params.get("optimization"),
             Some(&"speed".to_string())

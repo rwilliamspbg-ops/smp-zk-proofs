@@ -27,10 +27,11 @@ This document outlines the planned development roadmap for `smp-zk-proofs`.
 - [ ] Performance benchmarks comparing to development backend
 
 ### Groth16 Backend
-- [ ] Implement R1CS constraints for location circuit
-  - Replace EmptyCircuit with actual LocationR1CS
-  - Add commitment verification constraints
-- [ ] Implement R1CS constraints for training circuit
+- [x] Implement R1CS constraints for location circuit
+  - [x] Real `UInt32` bounding-box comparison gadgets via ark-r1cs-std
+  - [ ] Add commitment verification constraints (Phase B remaining work)
+- [x] Implement R1CS constraints for training circuit
+  - [x] Step-count equality and loss `<=` bound via Boolean gadgets
 - [ ] Circuit parameter tuning for optimal proof size
 - [ ] Integration tests with real arkworks proofs
 
