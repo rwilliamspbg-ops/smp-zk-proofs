@@ -9,7 +9,13 @@ pub mod utils;
 
 pub use constraints::{ConstraintReport, LocationCircuit, TrainingCircuit};
 pub use error::ZkProofError;
+<<<<<<< HEAD
 pub use pq_compatibility::{DilithiumBackend, PQSecureAggregator, DilithiumVerificationGadget};
+=======
+pub use pq_compatibility::{
+    PlaceholderBackend, PostQuantumBackend, PostQuantumBackendDescriptor, PostQuantumBackendStatus,
+};
+>>>>>>> origin/main
 pub use proofs::generator::{ProvingContext, prove_location, prove_training};
 pub use proofs::types::{
     BoundingBox, CircuitKind, LocationPrivateWitness, LocationPublicInputs, Proof, ProofScheme,

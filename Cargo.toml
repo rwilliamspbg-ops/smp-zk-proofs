@@ -1,10 +1,18 @@
 [package]
 name = "smp-zk-proofs"
 version = "0.1.0"
+<<<<<<< HEAD
 edition = "2021"
 description = "Scaffold for verifiable aggregation proofs in Sovereign Map style spatial networks"
+=======
+edition = "2024"
+rust-version = "1.95"
+description = "Verifiable aggregation proofs for Sovereign Map style spatial networks"
+>>>>>>> origin/main
 license = "MIT"
 repository = "https://github.com/rwilliamspbg-ops/smp-zk-proofs"
+keywords = ["zk", "proofs", "aggregation", "spatial", "verifiable"]
+categories = ["cryptography", "science"]
 
 [dependencies]
 # Serialization
@@ -42,3 +50,58 @@ criterion = "0.5"
 [[bench]]
 name = "proof_benchmarks"
 harness = false
+
+[features]
+default = []
+# Enable the Halo2 proving backend (opt-in). Add real backend deps when ready.
+halo2 = []
+groth16 = [
+	"ark-groth16",
+	"ark-bn254",
+	"ark-ff",
+	"ark-serialize",
+	"ark-relations",
+	"ark-std",
+	"rand",
+	"ark-r1cs-std",
+]
+
+[dependencies.ark-r1cs-std]
+version = "0.4"
+optional = true
+
+[dependencies.halo2_proofs]
+version = "0.1"
+optional = true
+
+[package.metadata]
+note = "Halo2 feature is opt-in; pinned optional deps are below"
+
+[dependencies.ark-groth16]
+version = "0.4"
+optional = true
+
+[dependencies.ark-bn254]
+version = "0.4"
+optional = true
+
+[dependencies.ark-ff]
+version = "0.4"
+optional = true
+
+[dependencies.ark-serialize]
+version = "0.4"
+optional = true
+
+[dependencies.ark-relations]
+version = "0.4"
+optional = true
+
+[dependencies.ark-std]
+version = "0.4"
+optional = true
+
+[dependencies.rand]
+version = "0.8"
+optional = true
+

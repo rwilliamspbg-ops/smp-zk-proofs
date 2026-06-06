@@ -1,4 +1,5 @@
 ```
+<<<<<<< HEAD
 # Rust-specific ignores
 target/
 Cargo.lock
@@ -41,11 +42,19 @@ __pycache__/
 # Build outputs
 dist/
 build/
+=======
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+>>>>>>> origin/main
 *.out
 *.exe
 *.dll
 *.so
 *.a
+<<<<<<< HEAD
 *.dylib
 
 # Testing
@@ -53,4 +62,66 @@ build/
 .pytest_cache/
 .nyc_output/
 istanbul/
+=======
+*.class
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+.env
+.env.local
+.env.*
+
+# Build directories
+dist/
+build/
+target/
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editors
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+# Rust specific
+Cargo.lock
+target/
+**/*.rs.bk
+>>>>>>> origin/main
 ```

@@ -1,3 +1,11 @@
 pub mod generator;
+#[cfg(feature = "groth16")]
+pub mod groth16_backend;
+#[cfg(feature = "groth16")]
+pub mod groth16_circuits;
+#[cfg(feature = "halo2")]
+pub mod halo2_backend;
+#[cfg(feature = "halo2")]
+pub mod halo2_circuits;
 pub mod types;
 pub mod verifier;

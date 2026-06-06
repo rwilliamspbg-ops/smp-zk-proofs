@@ -250,6 +250,7 @@ pub fn prove_training(
 ) -> Result<Proof, ZkProofError> {
     // First validate constraints
     let report = TrainingCircuit.evaluate(public_inputs, private_witness)?;
+<<<<<<< HEAD
     
     // Generate zk-SNARK proof
     let mut rng = OsRng;
@@ -266,6 +267,105 @@ pub fn prove_training(
     
     let zk_snark_proof = ZkSnarkProof::from_arkworks_proof(&ark_proof)?;
     
+=======
+    sign_proof(context, public_inputs, report)
+}
+
+#[cfg(feature = "halo2")]
+pub fn prove_location_halo2(
+    _context: &ProvingContext,
+    public_inputs: &LocationPublicInputs,
+    private_witness: &LocationPrivateWitness,
+) -> Result<Proof, ZkProofError> {
+    // Build a Halo2 proof (scaffold) and wrap it into the existing `Proof` type.
+    let proof_bytes =
+        crate::proofs::halo2_backend::prove_location_halo2(public_inputs, private_witness)?;
+    let report = LocationCircuit.evaluate(public_inputs, private_witness)?;
+    let statement_digest = utils::hash_serializable(public_inputs)?;
+    let constraint_digest = report.digest()?;
+
+    Ok(Proof {
+        circuit: report.circuit,
+        scheme: ProofScheme::Halo2V1,
+        statement_digest,
+        constraint_digest,
+        signature: Vec::new(),
+        backend_proof: Some(proof_bytes),
+    })
+}
+
+#[cfg(feature = "halo2")]
+pub fn prove_training_halo2(
+    _context: &ProvingContext,
+    public_inputs: &TrainingPublicInputs,
+    private_witness: &TrainingPrivateWitness,
+) -> Result<Proof, ZkProofError> {
+    let proof_bytes =
+        crate::proofs::halo2_backend::prove_training_halo2(public_inputs, private_witness)?;
+    let report = TrainingCircuit.evaluate(public_inputs, private_witness)?;
+    let statement_digest = utils::hash_serializable(public_inputs)?;
+    let constraint_digest = report.digest()?;
+
+    Ok(Proof {
+        circuit: report.circuit,
+        scheme: ProofScheme::Halo2V1,
+        statement_digest,
+        constraint_digest,
+        signature: Vec::new(),
+        backend_proof: Some(proof_bytes),
+    })
+}
+
+#[cfg(feature = "groth16")]
+pub fn prove_location_groth16(
+    _context: &ProvingContext,
+    public_inputs: &LocationPublicInputs,
+    private_witness: &LocationPrivateWitness,
+) -> Result<Proof, ZkProofError> {
+    let proof_bytes =
+        crate::proofs::groth16_backend::prove_location_groth16(public_inputs, private_witness)?;
+    let report = LocationCircuit.evaluate(public_inputs, private_witness)?;
+    let statement_digest = utils::hash_serializable(public_inputs)?;
+    let constraint_digest = report.digest()?;
+
+    Ok(Proof {
+        circuit: report.circuit,
+        scheme: ProofScheme::Groth16V1,
+        statement_digest,
+        constraint_digest,
+        signature: Vec::new(),
+        backend_proof: Some(proof_bytes),
+    })
+}
+
+#[cfg(feature = "groth16")]
+pub fn prove_training_groth16(
+    _context: &ProvingContext,
+    public_inputs: &TrainingPublicInputs,
+    private_witness: &TrainingPrivateWitness,
+) -> Result<Proof, ZkProofError> {
+    let proof_bytes =
+        crate::proofs::groth16_backend::prove_training_groth16(public_inputs, private_witness)?;
+    let report = TrainingCircuit.evaluate(public_inputs, private_witness)?;
+    let statement_digest = utils::hash_serializable(public_inputs)?;
+    let constraint_digest = report.digest()?;
+
+    Ok(Proof {
+        circuit: report.circuit,
+        scheme: ProofScheme::Groth16V1,
+        statement_digest,
+        constraint_digest,
+        signature: Vec::new(),
+        backend_proof: Some(proof_bytes),
+    })
+}
+
+fn sign_proof<T: Serialize>(
+    context: &ProvingContext,
+    public_inputs: &T,
+    report: ConstraintReport,
+) -> Result<Proof, ZkProofError> {
+>>>>>>> origin/main
     let statement_digest = utils::hash_serializable(public_inputs)?;
     let constraint_digest = report.digest()?;
     
@@ -274,6 +374,11 @@ pub fn prove_training(
         scheme: ProofScheme::Groth16Bls12_381,
         statement_digest,
         constraint_digest,
+<<<<<<< HEAD
         zk_snark_proof: Some(zk_snark_proof),
+=======
+        signature,
+        backend_proof: None,
+>>>>>>> origin/main
     })
 }

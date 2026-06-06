@@ -13,7 +13,13 @@ pub enum CircuitKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProofScheme {
+<<<<<<< HEAD
     Groth16Bls12_381,
+=======
+    DevelopmentSignedTranscriptV1,
+    Halo2V1,
+    Groth16V1,
+>>>>>>> origin/main
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -250,7 +256,13 @@ pub struct Proof {
     pub scheme: ProofScheme,
     pub statement_digest: [u8; 32],
     pub constraint_digest: [u8; 32],
+<<<<<<< HEAD
     pub zk_snark_proof: Option<ZkSnarkProof>,
+=======
+    pub signature: Vec<u8>,
+    #[serde(default)]
+    pub backend_proof: Option<Vec<u8>>,
+>>>>>>> origin/main
 }
 
 impl Proof {
