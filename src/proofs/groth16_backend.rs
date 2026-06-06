@@ -14,7 +14,7 @@ use ark_r1cs_std::alloc::AllocVar;
 use ark_r1cs_std::boolean::Boolean;
 use ark_r1cs_std::eq::EqGadget;
 use ark_r1cs_std::fields::fp::FpVar;
-use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
+use ark_relations::gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Compress, Validate};
 use rand::rngs::OsRng;
 use std::io::Cursor;
@@ -52,7 +52,7 @@ impl ConstraintSynthesizer<Fr> for TrainingR1CS {
         // Enforce observed_loss <= max_loss
         let lt_loss = loss_var.is_cmp(&max_loss_var, core::cmp::Ordering::Less, true)?;
         let eq_loss = loss_var.is_eq(&max_loss_var)?;
-        let le_loss = Boolean::or(&lt_loss, &eq_loss)?;
+        let le_loss = Boolean::kary_or(&[lt_loss, eq_loss])?;
         le_loss.enforce_equal(&Boolean::TRUE)?;
 
         Ok(())
