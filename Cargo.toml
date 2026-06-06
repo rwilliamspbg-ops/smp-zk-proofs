@@ -1,22 +1,23 @@
 [package]
 name = "smp-zk-proofs"
-version = "0.1.0" 
+version = "0.1.0"
 authors = ["Ryan Williams <r.williamspbg@gmail.com>"]
-edition = "2021"
-description = "A Rust library providing verifiable aggregation ledgers in distributed spatial networks using zero-knowledge proofs."
+edition = "2024"
+rust-version = "1.91"
+description = "ZK proof primitives for verifiable location and ML-training claims. Stable Ed25519-transcript backend ships by default; Groth16 (arkworks/BN-254) and Halo2 are opt-in feature flags."
 documentation = "https://docs.rs/smp-zk-proofs"
 homepage = "https://github.com/rwilliamspbg-ops/smp-zk-proofs"
 repository = "https://github.com/rwilliamspbg-ops/smp-zk-proofs"
 license = "MIT"
 readme = "README.md"
 keywords = ["cryptography", "zkp", "spatial-networks", "halo2", "arkworks"]
-categories = ["cryptography", "science"]
+categories = ["cryptography::cryptography", "science"]
 
 [dependencies]
 bincode = "1.3"
 ed25519-dalek = "2.2.0"
-serde = { version = "1.0.228", features = ["derive"] }
-sha2 = "0.11.0"
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
 thiserror = "2.0.18"
 
 [dev-dependencies]
@@ -42,41 +43,38 @@ groth16 = [
 ]
 
 [dependencies.ark-r1cs-std]
-version = "0.4"
+version = "0.6"
 optional = true
 
 [dependencies.halo2_proofs]
 version = "0.1"
 optional = true
 
-[package.metadata]
-note = "Halo2 feature is opt-in; pinned optional deps are below"
 
 [dependencies.ark-groth16]
-version = "0.4"
+version = "0.6"
 optional = true
 
 [dependencies.ark-bn254]
-version = "0.4"
+version = "0.6"
 optional = true
 
 [dependencies.ark-ff]
-version = "0.4"
+version = "0.6"
 optional = true
 
 [dependencies.ark-serialize]
-version = "0.4"
+version = "0.6"
 optional = true
 
 [dependencies.ark-relations]
-version = "0.4"
+version = "0.6"
 optional = true
 
 [dependencies.ark-std]
-version = "0.4"
+version = "0.6"
 optional = true
 
 [dependencies.rand]
 version = "0.8"
 optional = true
-

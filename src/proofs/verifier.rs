@@ -2,10 +2,20 @@ use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use serde::Serialize;
 
 use crate::{
+    ZkProofError,
     proofs::{transcript_message, types::*},
-    utils, ZkProofError,
+    utils,
 };
 
+/// Verify a location [`Proof`] against `public_inputs` using `verification_key`.
+///
+/// Supports all implemented proof schemes — routes to the appropriate backend
+/// when `halo2` or `groth16` features are enabled.
+///
+/// # Errors
+///
+/// Returns [`ZkProofError::VerificationFailed`] if the proof is invalid,
+/// uses an unsupported scheme, or the signature does not match.
 pub fn verify_location_proof(
     verification_key: &VerificationKey,
     public_inputs: &LocationPublicInputs,
@@ -14,27 +24,27 @@ pub fn verify_location_proof(
     // If the proof is a Halo2 proof and the feature is enabled, route to halo2 verifier.
     #[cfg(feature = "halo2")]
     {
-        if proof.scheme == ProofScheme::Halo2V1 {
-            if let Some(bytes) = &proof.backend_proof {
-                return crate::proofs::halo2_backend::verify_location_halo2(
-                    &verification_key.verifying_key,
-                    public_inputs,
-                    bytes,
-                );
-            }
+        if proof.scheme == ProofScheme::Halo2V1
+            && let Some(bytes) = &proof.backend_proof
+        {
+            return crate::proofs::halo2_backend::verify_location_halo2(
+                &verification_key.verifying_key,
+                public_inputs,
+                bytes,
+            );
         }
     }
 
     #[cfg(feature = "groth16")]
     {
-        if proof.scheme == ProofScheme::Groth16V1 {
-            if let Some(bytes) = &proof.backend_proof {
-                return crate::proofs::groth16_backend::verify_location_groth16(
-                    &verification_key.verifying_key,
-                    public_inputs,
-                    bytes,
-                );
-            }
+        if proof.scheme == ProofScheme::Groth16V1
+            && let Some(bytes) = &proof.backend_proof
+        {
+            return crate::proofs::groth16_backend::verify_location_groth16(
+                &verification_key.verifying_key,
+                public_inputs,
+                bytes,
+            );
         }
     }
 
@@ -46,6 +56,9 @@ pub fn verify_location_proof(
     )
 }
 
+/// Verify a training [`Proof`] against `public_inputs` using `verification_key`.
+///
+/// See [`verify_location_proof`] for scheme-routing details and error semantics.
 pub fn verify_training_proof(
     verification_key: &VerificationKey,
     public_inputs: &TrainingPublicInputs,
@@ -53,27 +66,27 @@ pub fn verify_training_proof(
 ) -> Result<(), ZkProofError> {
     #[cfg(feature = "halo2")]
     {
-        if proof.scheme == ProofScheme::Halo2V1 {
-            if let Some(bytes) = &proof.backend_proof {
-                return crate::proofs::halo2_backend::verify_training_halo2(
-                    &verification_key.verifying_key,
-                    public_inputs,
-                    bytes,
-                );
-            }
+        if proof.scheme == ProofScheme::Halo2V1
+            && let Some(bytes) = &proof.backend_proof
+        {
+            return crate::proofs::halo2_backend::verify_training_halo2(
+                &verification_key.verifying_key,
+                public_inputs,
+                bytes,
+            );
         }
     }
 
     #[cfg(feature = "groth16")]
     {
-        if proof.scheme == ProofScheme::Groth16V1 {
-            if let Some(bytes) = &proof.backend_proof {
-                return crate::proofs::groth16_backend::verify_training_groth16(
-                    &verification_key.verifying_key,
-                    public_inputs,
-                    bytes,
-                );
-            }
+        if proof.scheme == ProofScheme::Groth16V1
+            && let Some(bytes) = &proof.backend_proof
+        {
+            return crate::proofs::groth16_backend::verify_training_groth16(
+                &verification_key.verifying_key,
+                public_inputs,
+                bytes,
+            );
         }
     }
 

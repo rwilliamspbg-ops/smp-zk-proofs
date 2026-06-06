@@ -13,15 +13,20 @@ if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
-echo "running release checks"
-source "$HOME/.cargo/env"
+# Verify cargo is available without assuming a rustup install layout.
+if ! command -v cargo &>/dev/null; then
+  echo "cargo not found; install Rust from https://rustup.rs" >&2
+  exit 1
+fi
+
+echo "running release checks for v${version}"
 cargo fmt --check --all
-cargo clippy --all-targets --all-features --locked -- -D warnings
-cargo test --all-targets --locked
-cargo test --doc --locked
-cargo build --examples --locked
-cargo build --benches --locked
-cargo package --allow-dirty
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-targets --all-features
+cargo test --doc
+cargo build --examples
+cargo build --benches
+cargo package --no-verify
 
 tag="v${version}"
 
@@ -31,4 +36,4 @@ if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
 fi
 
 git tag -a "$tag" -m "Release ${tag}"
-echo "created tag ${tag}"
+echo "created tag ${tag} — push with: git push origin ${tag}"

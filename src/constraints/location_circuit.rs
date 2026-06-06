@@ -1,10 +1,12 @@
 use crate::{
+    ZkProofError,
     constraints::{Circuit, ConstraintReport},
     proofs::types::{CircuitKind, LocationPrivateWitness, LocationPublicInputs},
-    utils, ZkProofError,
+    utils,
 };
 
 #[derive(Debug, Default, Clone, Copy)]
+/// Circuit that checks a private `(x, y)` lies within a declared bounding box.
 pub struct LocationCircuit;
 
 impl Circuit for LocationCircuit {

@@ -4,7 +4,7 @@
 
 `smp-zk-proofs` is a Rust library for verifiable aggregation ledgers in distributed spatial networks. It provides a clean crate layout, deterministic proof-generation and verification flows, serialization helpers, runnable examples, and benchmark hooks so the repository can evolve toward Halo2/arkworks-backed zero-knowledge proofs without changing its public module boundaries.
 
-Prerequisites: Rust 1.95 or newer.
+Prerequisites: Rust 1.91 or newer (edition 2024).
 
 ## What is being proven?
 

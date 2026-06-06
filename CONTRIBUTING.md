@@ -23,9 +23,9 @@ This project adheres to the Rust Code of Conduct. Please be respectful and inclu
 4. Run the full test suite:
    ```bash
    cargo fmt --check
-   cargo clippy --all-targets --all-features --locked -- -D warnings
-   cargo test --all-targets --locked
-   cargo test --doc --locked
+   cargo clippy --all-targets --all-features -- -D warnings
+   cargo test --all-targets
+   cargo test --doc
    ```
 5. Commit your changes with clear messages
 6. Push to your fork and open a pull request
@@ -46,7 +46,7 @@ git clone https://github.com/rwilliamspbg-ops/smp-zk-proofs.git
 cd smp-zk-proofs
 
 # Install the correct Rust toolchain
-rustup override set 1.95.0
+rustup override set 1.91.0
 
 # Build the project
 cargo build

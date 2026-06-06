@@ -1,8 +1,8 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use smp_zk_proofs::{
-    prove_location, prove_training, verify_location_proof, verify_training_proof, BoundingBox,
-    LocationPrivateWitness, LocationPublicInputs, ProvingContext, TrainingPrivateWitness,
-    TrainingPublicInputs,
+    BoundingBox, LocationPrivateWitness, LocationPublicInputs, ProvingContext,
+    TrainingPrivateWitness, TrainingPublicInputs, prove_location, prove_training,
+    verify_location_proof, verify_training_proof,
 };
 
 fn bench_location(c: &mut Criterion) {

@@ -77,6 +77,7 @@ pub struct ProofMetadata {
 }
 
 impl ProofMetadata {
+    /// Create a new `ProofMetadata` stamped with the current time.
     pub fn new(backend: &str, security_level: u32) -> Self {
         Self {
             timestamp: std::time::SystemTime::now()
@@ -348,7 +349,7 @@ fn generate_hybrid_location_proof(
 
     // Generate PQC proof (using lattice as default)
     let mut pqc_config = config.clone();
-    pqc_config.hybrid_mode = false;
+    pqc_config.hybrid_strategy = None;
     pqc_config.backend_type = crate::pq_compatibility::PqcBackendType::Lattice;
 
     let pqc_proof = crate::pq_compatibility::lattice_backend::generate_pqc_location_proof(

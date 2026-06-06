@@ -1,6 +1,6 @@
 use smp_zk_proofs::{
-    prove_training, verify_training_proof, Proof, ProvingContext, TrainingPrivateWitness,
-    TrainingPublicInputs,
+    Proof, ProvingContext, TrainingPrivateWitness, TrainingPublicInputs, prove_training,
+    verify_training_proof,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

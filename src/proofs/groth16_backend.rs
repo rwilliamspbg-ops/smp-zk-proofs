@@ -3,19 +3,18 @@
 //! This module provides real Groth16 proof generation and verification
 //! using the LocationR1CS circuit for bounding box constraints.
 
-#![cfg(feature = "groth16")]
-
+use crate::ZkProofError;
 use crate::proofs::types::{
     LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs,
 };
-use crate::ZkProofError;
 
 use ark_bn254::{Bn254, Fr};
-use ark_groth16::{prepare_verifying_key, Groth16, Proof as GrothProof, VerifyingKey};
+use ark_groth16::{Groth16, Proof as GrothProof, VerifyingKey, prepare_verifying_key};
 use ark_r1cs_std::alloc::AllocVar;
+use ark_r1cs_std::boolean::Boolean;
 use ark_r1cs_std::eq::EqGadget;
 use ark_r1cs_std::fields::fp::FpVar;
-use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
+use ark_relations::gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Compress, Validate};
 use rand::rngs::OsRng;
 use std::io::Cursor;
@@ -24,11 +23,16 @@ use std::io::Cursor;
 pub use super::groth16_circuits::LocationR1CS;
 
 #[derive(Clone)]
-/// TrainingR1CS enforces training constraints: steps completed and loss bounds
+/// R1CS circuit that enforces `steps_completed == expected_steps` and
+/// `observed_loss <= max_loss`.
 pub struct TrainingR1CS {
+    /// Private number of training steps completed (witness).
     pub steps_completed: u32,
+    /// Private observed training loss in milli-units (witness).
     pub observed_loss: u64,
+    /// Expected step count (public input).
     pub expected_steps: u32,
+    /// Maximum allowed loss in milli-units (public input).
     pub max_loss: u64,
 }
 
@@ -38,15 +42,18 @@ impl ConstraintSynthesizer<Fr> for TrainingR1CS {
             FpVar::<Fr>::new_witness(cs.clone(), || Ok(Fr::from(self.steps_completed)))?;
         let loss_var = FpVar::<Fr>::new_witness(cs.clone(), || Ok(Fr::from(self.observed_loss)))?;
 
-        let _expected_steps_var =
+        let expected_steps_var =
             FpVar::<Fr>::new_input(cs.clone(), || Ok(Fr::from(self.expected_steps)))?;
-        let _max_loss_var = FpVar::<Fr>::new_input(cs.clone(), || Ok(Fr::from(self.max_loss)))?;
+        let max_loss_var = FpVar::<Fr>::new_input(cs.clone(), || Ok(Fr::from(self.max_loss)))?;
 
-        // Enforce steps_completed <= expected_steps
-        // For simplicity, we just ensure both values are assigned
-        // Real implementation would add comparison constraints
-        steps_var.enforce_equal(&steps_var)?;
-        loss_var.enforce_equal(&loss_var)?;
+        // Enforce steps_completed == expected_steps (exact match required)
+        steps_var.enforce_equal(&expected_steps_var)?;
+
+        // Enforce observed_loss <= max_loss
+        let lt_loss = loss_var.is_cmp(&max_loss_var, core::cmp::Ordering::Less, true)?;
+        let eq_loss = loss_var.is_eq(&max_loss_var)?;
+        let le_loss = Boolean::kary_or(&[lt_loss, eq_loss])?;
+        le_loss.enforce_equal(&Boolean::TRUE)?;
 
         Ok(())
     }
@@ -93,13 +100,20 @@ pub fn prove_location_groth16(
     };
 
     let mut rng = OsRng;
+    // WARNING: this generates a fresh ephemeral trusted setup on every call.
+    // In production, generate parameters once, persist them, and pass them in
+    // to avoid the per-call cost and to use a proper MPC ceremony.
     let params =
         Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)
             .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
 
-    // Create proof with the same circuit
-    let proof = Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut rng)
-        .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
+    // ark-groth16 panics (assert!) when R1CS constraints are unsatisfied.
+    // Wrap in catch_unwind to surface that as a proper ZkProofError.
+    let proof = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut OsRng)
+    }))
+    .map_err(|_| ZkProofError::VerificationFailed("R1CS constraints unsatisfied".to_owned()))?
+    .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
 
     let vk = params.vk;
     let vk_bytes = serialize_with_len(&vk)?;
@@ -129,12 +143,18 @@ pub fn prove_training_groth16(
     };
 
     let mut rng = OsRng;
+    // WARNING: ephemeral trusted setup — see prove_location_groth16 for details.
     let params =
         Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)
             .map_err(|e| ZkProofError::VerificationFailed(format!("param gen: {e}")))?;
 
-    let proof = Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut rng)
-        .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
+    // ark-groth16 panics (debug_assert) when the R1CS is unsatisfied, so we
+    // catch that panic and surface it as a proper ZkProofError instead.
+    let proof = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        Groth16::<Bn254>::create_random_proof_with_reduction(circuit, &params, &mut OsRng)
+    }))
+    .map_err(|_| ZkProofError::VerificationFailed("R1CS constraints unsatisfied".to_owned()))?
+    .map_err(|e| ZkProofError::VerificationFailed(format!("proof gen: {e}")))?;
 
     let vk = params.vk;
     let vk_bytes = serialize_with_len(&vk)?;
