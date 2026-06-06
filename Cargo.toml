@@ -1,12 +1,15 @@
 [package]
 name = "smp-zk-proofs"
-version = "0.1.0"
-edition = "2024"
-rust-version = "1.95"
-description = "Verifiable aggregation proofs for Sovereign Map style spatial networks"
-license = "MIT"
+version = "0.1.0" 
+authors = ["Ryan Williams <r.williamspbg@gmail.com>"]
+edition = "2021"
+description = "A Rust library providing verifiable aggregation ledgers in distributed spatial networks using zero-knowledge proofs."
+documentation = "https://docs.rs/smp-zk-proofs"
+homepage = "https://github.com/rwilliamspbg-ops/smp-zk-proofs"
 repository = "https://github.com/rwilliamspbg-ops/smp-zk-proofs"
-keywords = ["zk", "proofs", "aggregation", "spatial", "verifiable"]
+license = "MIT"
+readme = "README.md"
+keywords = ["cryptography", "zkp", "spatial-networks", "halo2", "arkworks"]
 categories = ["cryptography", "science"]
 
 [dependencies]
