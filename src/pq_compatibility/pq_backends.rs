@@ -77,6 +77,7 @@ pub struct ProofMetadata {
 }
 
 impl ProofMetadata {
+    /// Create a new `ProofMetadata` stamped with the current time.
     pub fn new(backend: &str, security_level: u32) -> Self {
         Self {
             timestamp: std::time::SystemTime::now()

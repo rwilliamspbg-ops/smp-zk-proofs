@@ -95,6 +95,7 @@ pub struct ProofMetadata {
 }
 
 impl ProofMetadata {
+    /// Create a new `ProofMetadata` for the given `security_level`.
     pub fn new(security_level: u32) -> Self {
         Self {
             timestamp: std::time::SystemTime::now()
@@ -276,8 +277,8 @@ impl PostQuantumBackend for LatticeBackend {
     fn descriptor(&self) -> PostQuantumBackendDescriptor {
         PostQuantumBackendDescriptor {
             name: "lattice-kyber-backend",
-            status: PostQuantumBackendStatus::Ready,
-            notes: "Production-ready lattice-based PQC backend inspired by Kyber/Dilithium. Provides NIST Level 1/3/5 security.",
+            status: PostQuantumBackendStatus::Experimental,
+            notes: "Experimental lattice-based PQC backend inspired by Kyber/Dilithium.                     The commitment and response computations are illustrative (SHA-256 hashing                     and XOR response) and do NOT provide real LWE/MLWE security.                     Do not use in production until replaced with a NIST-standardised                     primitive (ML-KEM / ML-DSA).",
             migration_steps: &[
                 "Configure LatticeParams with desired security level (128/192/256 bits).",
                 "Replace classical proof generation with prove_location/prove_training functions.",

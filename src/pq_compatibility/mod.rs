@@ -42,6 +42,9 @@ pub enum PostQuantumBackendStatus {
     Reserved,
     /// Backend is planned but not yet implemented
     Planned,
+    /// Backend exists but uses illustrative/non-cryptographic internals.
+    /// Not suitable for production — requires a real primitive.
+    Experimental,
     /// Backend is ready for production use
     Ready,
 }
@@ -89,12 +92,13 @@ impl PqcBackendType {
         }
     }
 
-    /// Check if this backend is production-ready
+    /// Check if this backend is production-ready.
+    ///
+    /// Note: `Lattice` is `Experimental` (illustrative internals only) and
+    /// `Hash`/`Hybrid` route through it, so none are truly production-ready
+    /// until a NIST-standardised primitive is integrated.
     pub fn is_production_ready(&self) -> bool {
-        matches!(
-            self,
-            PqcBackendType::Lattice | PqcBackendType::Hash | PqcBackendType::Hybrid
-        )
+        false
     }
 }
 
@@ -160,24 +164,31 @@ impl Default for PqcConfig {
 /// Error types for PQC operations
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum PqcError {
+    /// The security level is below the required minimum (128 bits).
     #[error("Insufficient security level: {0} bits (minimum 128)")]
     InsufficientSecurityLevel(u32),
 
+    /// The requested backend type is not ready for production use.
     #[error("Backend {0:?} is not ready for production use")]
     BackendNotReady(PqcBackendType),
 
+    /// Proof generation failed.
     #[error("Proof generation failed: {0}")]
     ProofGenerationFailed(String),
 
+    /// Proof verification failed.
     #[error("Proof verification failed: {0}")]
     VerificationFailed(String),
 
+    /// The proof bytes are malformed or use an unrecognised format.
     #[error("Invalid proof format: {0}")]
     InvalidProofFormat(String),
 
+    /// Serialisation error.
     #[error("Serialization error: {0}")]
     SerializationError(String),
 
+    /// The classical and PQC components of a hybrid proof do not match.
     #[error("Hybrid proof mismatch: {0}")]
     HybridMismatch(String),
 }

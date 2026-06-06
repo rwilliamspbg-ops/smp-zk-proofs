@@ -212,4 +212,112 @@ mod tests {
 
         assert_eq!(public_inputs, recovered);
     }
+
+    /// Verify the fixed TrainingR1CS actually rejects a witness where loss exceeds max.
+    /// Prior to the fix, `generate_constraints` only enforced tautological equalities
+    /// and would have accepted any values.
+    #[test]
+    #[cfg(feature = "groth16")]
+    fn test_groth16_training_rejects_loss_over_max() {
+        use smp_zk_proofs::proofs::groth16_backend;
+
+        let (public_inputs, _valid_witness) = create_training_witness();
+
+        // Witness with loss deliberately above public max_loss_milli (10_000)
+        let bad_witness = smp_zk_proofs::proofs::types::TrainingPrivateWitness {
+            steps_completed: 1000,
+            observed_loss_milli: 99_999, // way above max
+            weight_update_digest: [2u8; 32],
+            blinding: [3u8; 32],
+        };
+
+        // The R1CS constraint `observed_loss <= max_loss` should be unsatisfied,
+        // causing proof generation to fail.
+        let result = groth16_backend::prove_training_groth16(&public_inputs, &bad_witness);
+        assert!(
+            result.is_err(),
+            "Groth16 TrainingR1CS should reject loss > max_loss, but proof was generated"
+        );
+    }
+
+    /// Verify the fixed TrainingR1CS rejects a witness with wrong step count.
+    #[test]
+    #[cfg(feature = "groth16")]
+    fn test_groth16_training_rejects_wrong_steps() {
+        use smp_zk_proofs::proofs::groth16_backend;
+
+        let (public_inputs, _valid_witness) = create_training_witness();
+
+        // public_inputs.expected_steps == 1000; use 999 to trigger mismatch
+        let bad_witness = smp_zk_proofs::proofs::types::TrainingPrivateWitness {
+            steps_completed: 999,
+            observed_loss_milli: 5000,
+            weight_update_digest: [2u8; 32],
+            blinding: [3u8; 32],
+        };
+
+        let result = groth16_backend::prove_training_groth16(&public_inputs, &bad_witness);
+        assert!(
+            result.is_err(),
+            "Groth16 TrainingR1CS should reject steps != expected_steps, but proof was generated"
+        );
+    }
+
+    /// Groth16 location circuit should reject a witness whose x coordinate
+    /// exceeds x_max, proving the LocationR1CS constraints are enforced.
+    #[test]
+    #[cfg(feature = "groth16")]
+    fn test_groth16_location_rejects_out_of_bounds_x() {
+        use smp_zk_proofs::proofs::groth16_backend;
+
+        let (public_inputs, _) = create_location_witness();
+        // public bounding box: x 0..=1000; use x = 1500
+        let bad_witness = smp_zk_proofs::proofs::types::LocationPrivateWitness {
+            x: 1500,
+            y: 500,
+            blinding: [42u8; 32],
+        };
+
+        let result = groth16_backend::prove_location_groth16(&public_inputs, &bad_witness);
+        assert!(
+            result.is_err(),
+            "Groth16 LocationR1CS should reject x outside bounding box, but proof was generated"
+        );
+    }
+
+    /// Groth16 location circuit should reject a witness whose y coordinate
+    /// is below y_min.
+    #[test]
+    #[cfg(feature = "groth16")]
+    fn test_groth16_location_rejects_out_of_bounds_y() {
+        use smp_zk_proofs::proofs::groth16_backend;
+
+        // Custom tight bounding box: y 100..=200
+        let bbox = smp_zk_proofs::proofs::types::BoundingBox {
+            x_min: 0,
+            x_max: 1000,
+            y_min: 100,
+            y_max: 200,
+        };
+        let valid_witness = smp_zk_proofs::proofs::types::LocationPrivateWitness {
+            x: 500,
+            y: 150,
+            blinding: [1u8; 32],
+        };
+        let public_inputs =
+            smp_zk_proofs::LocationPublicInputs::from_witness(bbox, &valid_witness).unwrap();
+
+        // y = 50 is below y_min = 100
+        let bad_witness = smp_zk_proofs::proofs::types::LocationPrivateWitness {
+            x: 500,
+            y: 50,
+            blinding: [1u8; 32],
+        };
+
+        let result = groth16_backend::prove_location_groth16(&public_inputs, &bad_witness);
+        assert!(
+            result.is_err(),
+            "Groth16 LocationR1CS should reject y below y_min, but proof was generated"
+        );
+    }
 }

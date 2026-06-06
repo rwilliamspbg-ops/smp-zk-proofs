@@ -6,6 +6,7 @@ use crate::{
 };
 
 #[derive(Debug, Default, Clone, Copy)]
+/// Circuit that checks a private training witness satisfies step-count and loss bounds.
 pub struct TrainingCircuit;
 
 impl Circuit for TrainingCircuit {

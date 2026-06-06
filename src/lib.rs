@@ -1,10 +1,16 @@
 #![forbid(unsafe_code)]
+#![warn(missing_docs)]
 #![doc = include_str!("../README.md")]
 
+/// Circuit definitions and native constraint evaluation.
 pub mod constraints;
+/// Error types for all `smp-zk-proofs` operations.
 pub mod error;
+/// Post-quantum compatibility layer and backend descriptors.
 pub mod pq_compatibility;
+/// Proof generation, verification, types, and proving backends.
 pub mod proofs;
+/// Serialisation, hashing, and commitment utilities.
 pub mod utils;
 
 pub use constraints::{ConstraintReport, LocationCircuit, TrainingCircuit};

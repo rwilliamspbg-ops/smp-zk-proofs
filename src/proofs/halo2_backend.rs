@@ -3,6 +3,14 @@
 //! This module is compiled only when the `halo2` Cargo feature is enabled.
 //! It provides integration points for implementing real ZK circuits using
 //! `halo2_proofs`.
+//!
+//! # ⚠️ Security Warning
+//!
+//! The current Halo2 backend is a **stub**. `prove_location_halo2` returns a
+//! fixed byte string and `verify_location_halo2` accepts it by string
+//! comparison — **this provides zero cryptographic security**. Do not use
+//! this feature in production. A real `halo2_proofs` circuit integration is
+//! tracked as future work.
 
 #![cfg(feature = "halo2")]
 
@@ -14,6 +22,18 @@ use crate::proofs::types::{
 
 /// Produce a Halo2 proof for the location circuit.
 /// Returns the serialized proof bytes on success.
+///
+/// # ⚠️ Stub Implementation
+///
+/// This function does **not** produce a real zero-knowledge proof. It runs
+/// the native constraint evaluator and returns a fixed sentinel byte string.
+/// The companion `verify_location_halo2` accepts only that exact sentinel.
+/// This is scaffolding for a future real Halo2 circuit and must not be used
+/// in production.
+#[deprecated(
+    since = "0.1.0",
+    note = "Halo2 backend is a stub — no real ZK proof is produced.             See src/proofs/halo2_backend.rs for details."
+)]
 pub fn prove_location_halo2(
     public_inputs: &LocationPublicInputs,
     private_witness: &LocationPrivateWitness,
@@ -26,6 +46,14 @@ pub fn prove_location_halo2(
 }
 
 /// Produce a Halo2 proof for the training circuit.
+///
+/// # ⚠️ Stub Implementation
+///
+/// See [`prove_location_halo2`] — the same stub caveat applies here.
+#[deprecated(
+    since = "0.1.0",
+    note = "Halo2 backend is a stub — no real ZK proof is produced."
+)]
 pub fn prove_training_halo2(
     public_inputs: &TrainingPublicInputs,
     private_witness: &TrainingPrivateWitness,

@@ -1,13 +1,22 @@
+//! Proof generation, verification, types, and backend integrations.
+
+/// Proof generation entry points and context.
 pub mod generator;
 #[cfg(feature = "groth16")]
+/// Groth16 proof generation and verification via arkworks.
 pub mod groth16_backend;
 #[cfg(feature = "groth16")]
+/// R1CS circuit definitions for the Groth16 backend.
 pub mod groth16_circuits;
 #[cfg(feature = "halo2")]
+/// Halo2 backend integration (stub — see module docs).
 pub mod halo2_backend;
 #[cfg(feature = "halo2")]
+/// Halo2 circuit placeholder types.
 pub mod halo2_circuits;
+/// Core proof types: circuits, schemes, witnesses, and proofs.
 pub mod types;
+/// Proof verification for all supported schemes.
 pub mod verifier;
 
 use crate::{ZkProofError, utils};

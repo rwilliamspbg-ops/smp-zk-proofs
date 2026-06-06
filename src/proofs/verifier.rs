@@ -7,6 +7,15 @@ use crate::{
     utils,
 };
 
+/// Verify a location [`Proof`] against `public_inputs` using `verification_key`.
+///
+/// Supports all implemented proof schemes — routes to the appropriate backend
+/// when `halo2` or `groth16` features are enabled.
+///
+/// # Errors
+///
+/// Returns [`ZkProofError::VerificationFailed`] if the proof is invalid,
+/// uses an unsupported scheme, or the signature does not match.
 pub fn verify_location_proof(
     verification_key: &VerificationKey,
     public_inputs: &LocationPublicInputs,
@@ -47,6 +56,9 @@ pub fn verify_location_proof(
     )
 }
 
+/// Verify a training [`Proof`] against `public_inputs` using `verification_key`.
+///
+/// See [`verify_location_proof`] for scheme-routing details and error semantics.
 pub fn verify_training_proof(
     verification_key: &VerificationKey,
     public_inputs: &TrainingPublicInputs,

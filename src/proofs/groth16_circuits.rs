@@ -10,13 +10,20 @@ use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisE
 // comparison gadgets. The circuit intentionally does NOT check the
 // coordinate_commitment yet; that will be added in Phase B with a
 // Pedersen/Poseidon gadget.
+/// R1CS circuit that enforces `x_min <= x <= x_max` and `y_min <= y <= y_max`.
 #[derive(Clone)]
 pub struct LocationR1CS {
+    /// Private x coordinate (witness).
     pub x: u32,
+    /// Private y coordinate (witness).
     pub y: u32,
+    /// Minimum x bound (public input).
     pub x_min: u32,
+    /// Maximum x bound (public input).
     pub x_max: u32,
+    /// Minimum y bound (public input).
     pub y_min: u32,
+    /// Maximum y bound (public input).
     pub y_max: u32,
 }
 

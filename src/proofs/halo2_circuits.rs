@@ -12,6 +12,7 @@ use crate::proofs::types::{
 pub struct Halo2LocationCircuit;
 
 impl Halo2LocationCircuit {
+    /// Validate that `bbox` is geometrically valid (delegates to [`BoundingBox::validate`]).
     pub fn validate_bounding_box(bbox: &BoundingBox) -> Result<(), ZkProofError> {
         bbox.validate()
     }
