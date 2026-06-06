@@ -1,8 +1,7 @@
 use crate::{
-    ZkProofError,
     constraints::{Circuit, ConstraintReport},
     proofs::types::{CircuitKind, LocationPrivateWitness, LocationPublicInputs},
-    utils,
+    utils, ZkProofError,
 };
 
 #[derive(Debug, Default, Clone, Copy)]

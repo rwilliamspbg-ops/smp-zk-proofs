@@ -2,10 +2,9 @@ use ed25519_dalek::{Signer, SigningKey};
 use serde::Serialize;
 
 use crate::{
-    ConstraintReport, LocationCircuit, TrainingCircuit, ZkProofError,
     constraints::Circuit,
     proofs::{transcript_message, types::*},
-    utils,
+    utils, ConstraintReport, LocationCircuit, TrainingCircuit, ZkProofError,
 };
 
 #[derive(Debug)]

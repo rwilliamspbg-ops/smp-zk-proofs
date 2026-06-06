@@ -10,7 +10,7 @@ pub mod halo2_circuits;
 pub mod types;
 pub mod verifier;
 
-use crate::{ZkProofError, utils};
+use crate::{utils, ZkProofError};
 use serde::Serialize;
 use types::{CircuitKind, ProofScheme};
 

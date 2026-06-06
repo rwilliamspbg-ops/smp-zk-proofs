@@ -5,13 +5,13 @@
 
 #![cfg(feature = "groth16")]
 
-use crate::ZkProofError;
 use crate::proofs::types::{
     LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs,
 };
+use crate::ZkProofError;
 
 use ark_bn254::{Bn254, Fr};
-use ark_groth16::{Groth16, Proof as GrothProof, VerifyingKey, prepare_verifying_key};
+use ark_groth16::{prepare_verifying_key, Groth16, Proof as GrothProof, VerifyingKey};
 use ark_r1cs_std::alloc::AllocVar;
 use ark_r1cs_std::eq::EqGadget;
 use ark_r1cs_std::fields::fp::FpVar;

@@ -12,7 +12,7 @@ pub use error::ZkProofError;
 pub use pq_compatibility::{
     PlaceholderBackend, PostQuantumBackend, PostQuantumBackendDescriptor, PostQuantumBackendStatus,
 };
-pub use proofs::generator::{ProvingContext, prove_location, prove_training};
+pub use proofs::generator::{prove_location, prove_training, ProvingContext};
 pub use proofs::types::{
     BoundingBox, CircuitKind, LocationPrivateWitness, LocationPublicInputs, Proof, ProofScheme,
     TrainingPrivateWitness, TrainingPublicInputs, VerificationKey,

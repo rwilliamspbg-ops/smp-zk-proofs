@@ -3,7 +3,7 @@ pub mod training_circuit;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{ZkProofError, proofs::types::CircuitKind, utils};
+use crate::{proofs::types::CircuitKind, utils, ZkProofError};
 
 pub use location_circuit::LocationCircuit;
 pub use training_circuit::TrainingCircuit;

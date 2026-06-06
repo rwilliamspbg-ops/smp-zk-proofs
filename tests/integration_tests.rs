@@ -2,11 +2,11 @@
 
 #[cfg(test)]
 mod tests {
-    use smp_zk_proofs::ZkProofError;
     use smp_zk_proofs::constraints::{Circuit, LocationCircuit, TrainingCircuit};
     use smp_zk_proofs::proofs::generator::{self, ProvingContext};
     use smp_zk_proofs::proofs::types::*;
     use smp_zk_proofs::proofs::verifier;
+    use smp_zk_proofs::ZkProofError;
 
     fn create_location_witness() -> (LocationPublicInputs, LocationPrivateWitness) {
         let bounding_box = BoundingBox {

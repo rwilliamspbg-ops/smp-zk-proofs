@@ -6,11 +6,11 @@
 
 #![cfg(feature = "halo2")]
 
-use crate::ZkProofError;
 use crate::proofs::halo2_circuits::Halo2LocationCircuit;
 use crate::proofs::types::{
     LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness, TrainingPublicInputs,
 };
+use crate::ZkProofError;
 
 /// Produce a Halo2 proof for the location circuit.
 /// Returns the serialized proof bytes on success.

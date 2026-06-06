@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{ZkProofError, utils};
+use crate::{utils, ZkProofError};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CircuitKind {
