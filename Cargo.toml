@@ -2,7 +2,7 @@
 name = "smp-zk-proofs"
 version = "0.1.1"
 authors = ["Ryan Williams <r.williamspbg@gmail.com>"]
-edition = "2026"
+edition = "2024"
 rust-version = "1.91"
 description = "ZK proof primitives for verifiable location and ML-training claims. Stable Ed25519-transcript backend ships by default; Groth16 (arkworks/BN-254) and Halo2 are opt-in feature flags."
 documentation = "https://docs.rs/smp-zk-proofs"
