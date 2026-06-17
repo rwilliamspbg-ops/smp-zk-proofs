@@ -1,0 +1,31 @@
+[build]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[package]
+name = "smp-zk-proofs"
+version = "0.1.0"
+
+[[fuzz.target]]
+name = "prove_proof_serialization"
+path = "../fuzz/proof_fuzz_targets.rs"
+sanitizer = false
+
+[[fuzz.target]]
+name = "training_proof_serialization"
+path = "../fuzz/proof_fuzz_targets.rs"
+sanitizer = false
+
+[[fuzz.target]]
+name = "location_public_inputs_serialization"
+path = "../fuzz/proof_fuzz_targets.rs"
+sanitizer = false
+
+[[fuzz.target]]
+name = "training_public_inputs_serialization"
+path = "../fuzz/proof_fuzz_targets.rs"
+sanitizer = false
+
+[[fuzz.target]]
+name = "verification_key_serialization"
+path = "../fuzz/proof_fuzz_targets.rs"
+sanitizer = false

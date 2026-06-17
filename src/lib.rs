@@ -24,3 +24,8 @@ pub use proofs::types::{
     TrainingPrivateWitness, TrainingPublicInputs, VerificationKey,
 };
 pub use proofs::verifier::{verify_location_proof, verify_training_proof};
+pub use utils::{
+    serialize, deserialize, hash_bytes, hash_serializable, location_commitment, training_commitment,
+    generate_csprng_blinding_factor, generate_deterministic_blinding_factor,
+    constant_time_eq_bytes, validate_blinding_factor,
+};
