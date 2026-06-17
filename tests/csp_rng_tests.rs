@@ -155,10 +155,8 @@ fn test_blinding_factor_uniqueness_across_proofs() {
     // Generate multiple blinding factors from different seeds
     let mut blinding_factors = Vec::new();
     for i in 0..100u8 {
-        let seed = [
-            i, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0,
-        ];
+        let mut seed = [0u8; 32];
+        seed[0] = i;
         let blinding = generate_deterministic_blinding_factor(seed);
         blinding_factors.push(blinding);
     }
@@ -181,10 +179,8 @@ fn test_blinding_factor_entropy_distribution() {
     let mut entropy_counts = std::collections::HashMap::new();
 
     for i in 0..100u8 {
-        let seed = [
-            i, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0,
-        ];
+        let mut seed = [0u8; 32];
+        seed[0] = i;
         let blinding = generate_deterministic_blinding_factor(seed);
 
         // Count unique values in the blinding factor
