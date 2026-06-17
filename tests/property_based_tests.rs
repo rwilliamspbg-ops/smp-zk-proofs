@@ -11,7 +11,7 @@ mod property_tests {
 
     // Property: Bounding box must always be valid (x_min <= x_max, y_min <= y_max)
     proptest! {
-        
+
         #[test]
         fn bounding_box_is_always_valid(x_min: i64, x_max: i64, y_min: i64, y_max: i64) {
             let box_ = BoundingBox { x_min, x_max, y_min, y_max };
@@ -22,11 +22,11 @@ mod property_tests {
         #[test]
         fn location_commitment_is_deterministic(x: i64, y: i64, blinding_seed: [u8; 32]) {
             let blinding = generate_deterministic_blinding_factor(blinding_seed);
-            
+
             // Same inputs should always produce same commitment
             let commitment1 = smp_zk_proofs::location_commitment(x, y, &blinding).unwrap();
             let commitment2 = smp_zk_proofs::location_commitment(x, y, &blinding).unwrap();
-            
+
             assert_eq!(commitment1, commitment2);
         }
 
@@ -37,7 +37,7 @@ mod property_tests {
             blinding_seed: [u8; 32]
         ) {
             let blinding = generate_deterministic_blinding_factor(blinding_seed);
-            
+
             // Same inputs should always produce same commitment
             let commitment1 = smp_zk_proofs::training_commitment(
                 base_digest, update_digest, &blinding
@@ -45,7 +45,7 @@ mod property_tests {
             let commitment2 = smp_zk_proofs::training_commitment(
                 base_digest, update_digest, &blinding
             ).unwrap();
-            
+
             assert_eq!(commitment1, commitment2);
         }
 
@@ -53,14 +53,14 @@ mod property_tests {
         fn blinding_factor_does_not_affect_commitment_content(x: i64, y: i64) {
             let seed1 = [0u8; 32];
             let seed2 = [1u8; 32];
-            
+
             let blinding1 = generate_deterministic_blinding_factor(seed1);
             let blinding2 = generate_deterministic_blinding_factor(seed2);
-            
+
             // Commitment should include blinding factor in its content
             let commitment1 = smp_zk_proofs::location_commitment(x, y, &blinding1).unwrap();
             let commitment2 = smp_zk_proofs::location_commitment(x, y, &blinding2).unwrap();
-            
+
             // Different bindings should produce different commitments
             assert_ne!(commitment1, commitment2);
         }
@@ -79,9 +79,9 @@ mod property_tests {
                 y,
                 blinding: [0u8; 32],
             };
-            
+
             let bounding_box = BoundingBox { x_min, x_max, y_min, y_max };
-            
+
             if !bounding_box.contains(x, y) {
                 // Prover outside bounds should fail
                 let _public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness);
@@ -91,11 +91,11 @@ mod property_tests {
                 // Prover inside bounds should succeed
                 let public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness)
                     .expect("Location public inputs");
-                
+
                 let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
                 let proof = smp_zk_proofs::prove_location(&context, &public_inputs, &witness)
                     .expect("Location proof generation");
-                
+
                 // Verify the proof succeeds
                 let verification_key = context.verification_key();
                 assert!(smp_zk_proofs::verify_location_proof(&verification_key, &public_inputs, &proof).is_ok());
@@ -113,24 +113,24 @@ mod property_tests {
                 weight_update_digest: [0u8; 32],
                 blinding: [0u8; 32],
             };
-            
+
             let public_inputs = TrainingPublicInputs::from_witness(
                 expected_steps, 200, [0u8; 32], &witness
             ).expect("Training public inputs");
-            
+
             // Different step counts should fail verification
             if steps_completed != expected_steps {
                 let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
                 let proof = smp_zk_proofs::prove_training(&context, &public_inputs, &witness)
                     .expect_err("Proof should fail for mismatched steps");
-                
+
                 assert!(proof.to_string().contains("training step count"));
             } else {
                 // Matching step counts should succeed
                 let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
                 let proof = smp_zk_proofs::prove_training(&context, &public_inputs, &witness)
                     .expect("Training proof generation");
-                
+
                 let verification_key = context.verification_key();
                 assert!(smp_zk_proofs::verify_training_proof(&verification_key, &public_inputs, &proof).is_ok());
             }
@@ -148,24 +148,24 @@ mod property_tests {
                 weight_update_digest: [0u8; 32],
                 blinding: [0u8; 32],
             };
-            
+
             let public_inputs = TrainingPublicInputs::from_witness(
                 expected_steps, max_loss_milli, [0u8; 32], &witness
             ).expect("Training public inputs");
-            
+
             // Loss exceeding threshold should fail
             if observed_loss_milli > max_loss_milli {
                 let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
                 let proof = smp_zk_proofs::prove_training(&context, &public_inputs, &witness)
                     .expect_err("Proof should fail for exceeded loss");
-                
+
                 assert!(proof.to_string().contains("loss"));
             } else {
                 // Within loss threshold should succeed
                 let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
                 let proof = smp_zk_proofs::prove_training(&context, &public_inputs, &witness)
                     .expect("Training proof generation");
-                
+
                 let verification_key = context.verification_key();
                 assert!(smp_zk_proofs::verify_training_proof(&verification_key, &public_inputs, &proof).is_ok());
             }
@@ -178,32 +178,32 @@ mod property_tests {
             witness_y_offset: i64,
         ) {
             let blinding = generate_deterministic_blinding_factor(seed);
-            
+
             let witness = LocationPrivateWitness {
                 x: 50 + witness_x_offset,
                 y: 50 + witness_y_offset,
                 blinding,
             };
-            
+
             let bounding_box = BoundingBox {
                 x_min: 0,
                 x_max: 100,
                 y_min: 0,
                 y_max: 100,
             };
-            
+
             let public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness)
                 .expect("Location public inputs");
-            
+
             let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
             let proof = smp_zk_proofs::prove_location(&context, &public_inputs, &witness)
                 .expect("Location proof generation");
-            
+
             // Serialize multiple times should produce same result
             let bytes1 = proof.to_bytes().unwrap();
             let bytes2 = proof.to_bytes().unwrap();
             assert_eq!(bytes1, bytes2);
-            
+
             // Deserialize should produce valid proof
             let deserialized: smp_zk_proofs::Proof = bincode::deserialize(&bytes1).unwrap();
             assert_eq!(deserialized.circuit, smp_zk_proofs::CircuitKind::Location);
@@ -215,12 +215,12 @@ mod property_tests {
         ) {
             let context = smp_zk_proofs::ProvingContext::from_seed(seed);
             let vk = context.verification_key();
-            
+
             // Serialize and deserialize multiple times
             let bytes1 = vk.to_bytes().unwrap();
             let bytes2 = vk.to_bytes().unwrap();
             assert_eq!(bytes1, bytes2);
-            
+
             let deserialized_vk = smp_zk_proofs::VerificationKey::from_bytes(&bytes1).unwrap();
             assert_eq!(vk.verifying_key, deserialized_vk.verifying_key);
         }
@@ -232,30 +232,30 @@ mod property_tests {
         ) {
             let context1 = smp_zk_proofs::ProvingContext::from_seed(seed1);
             let context2 = smp_zk_proofs::ProvingContext::from_seed(seed2);
-            
+
             let witness = LocationPrivateWitness {
                 x: 50,
                 y: 50,
                 blinding: [0u8; 32],
             };
-            
+
             let bounding_box = BoundingBox {
                 x_min: 0,
                 x_max: 100,
                 y_min: 0,
                 y_max: 100,
             };
-            
+
             let public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness)
                 .expect("Location public inputs");
-            
+
             let proof = smp_zk_proofs::prove_location(&context1, &public_inputs, &witness)
                 .expect("Location proof generation");
-            
+
             // Verify with correct key should succeed
             let vk1 = context1.verification_key();
             assert!(smp_zk_proofs::verify_location_proof(&vk1, &public_inputs, &proof).is_ok());
-            
+
             // Verify with wrong key should fail
             let vk2 = context2.verification_key();
             assert!(smp_zk_proofs::verify_location_proof(&vk2, &public_inputs, &proof).is_err());
@@ -271,26 +271,26 @@ mod property_tests {
                 y: 50,
                 blinding: [0u8; 32],
             };
-            
+
             let bounding_box = BoundingBox {
                 x_min: 0,
                 x_max: 100,
                 y_min: 0,
                 y_max: 100,
             };
-            
+
             let public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness)
                 .expect("Location public inputs");
-            
+
             let proof = smp_zk_proofs::prove_location(&context, &public_inputs, &witness)
                 .expect("Location proof generation");
-            
+
             // Tamper with signature
             let mut tampered_proof = proof;
             if !tampered_proof.signature.is_empty() {
                 tampered_proof.signature[0] ^= 0x01;
             }
-            
+
             // Verify should fail
             let vk = context.verification_key();
             assert!(smp_zk_proofs::verify_location_proof(&vk, &public_inputs, &tampered_proof).is_err());
@@ -306,24 +306,24 @@ mod property_tests {
                 y: 50,
                 blinding: [0u8; 32],
             };
-            
+
             let bounding_box = BoundingBox {
                 x_min: 0,
                 x_max: 100,
                 y_min: 0,
                 y_max: 100,
             };
-            
+
             let location_public_inputs = LocationPublicInputs::from_witness(bounding_box, &location_witness)
                 .expect("Location public inputs");
-            
+
             let location_proof = smp_zk_proofs::prove_location(&context, &location_public_inputs, &location_witness)
                 .expect("Location proof generation");
-            
+
             // Tamper with circuit type
             let mut tampered_proof = location_proof;
             tampered_proof.circuit = smp_zk_proofs::CircuitKind::Training;
-            
+
             // Verify should fail
             let vk = context.verification_key();
             assert!(smp_zk_proofs::verify_location_proof(&vk, &location_public_inputs, &tampered_proof).is_err());
@@ -339,20 +339,20 @@ mod property_tests {
                 y: 50,
                 blinding: [0u8; 32],
             };
-            
+
             let bounding_box = BoundingBox {
                 x_min: 0,
                 x_max: 100,
                 y_min: 0,
                 y_max: 100,
             };
-            
+
             let public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness)
                 .expect("Location public inputs");
-            
+
             let proof = smp_zk_proofs::prove_location(&context, &public_inputs, &witness)
                 .expect("Location proof generation");
-            
+
             // Proof should be reasonable size (not too large)
             let bytes = proof.to_bytes().unwrap();
             assert!(bytes.len() < 1024, "Proof should be less than 1KB");
@@ -363,7 +363,7 @@ mod property_tests {
             seed: [u8; 32],
         ) {
             let context = smp_zk_proofs::ProvingContext::from_seed(seed);
-            
+
             // Generate multiple proofs with different witnesses
             let mut proofs = Vec::new();
             for i in 0..10u8 {
@@ -372,23 +372,23 @@ mod property_tests {
                     y: 50,
                     blinding: [0u8; 32],
                 };
-                
+
                 let bounding_box = BoundingBox {
                     x_min: 0,
                     x_max: 100,
                     y_min: 0,
                     y_max: 100,
                 };
-                
+
                 let public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness)
                     .expect("Location public inputs");
-                
+
                 let proof = smp_zk_proofs::prove_location(&context, &public_inputs, &witness)
                     .expect("Location proof generation");
-                
+
                 proofs.push(proof);
             }
-            
+
             // All proofs should be different
             for i in 0..proofs.len() {
                 for j in (i + 1)..proofs.len() {
