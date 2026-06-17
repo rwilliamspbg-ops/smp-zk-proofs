@@ -24,8 +24,12 @@ pub use proofs::types::{
     TrainingPrivateWitness, TrainingPublicInputs, VerificationKey,
 };
 pub use proofs::verifier::{verify_location_proof, verify_training_proof};
+#[cfg(feature = "rand")]
+pub use utils::generate_csprng_blinding_factor;
+#[cfg(feature = "rand")]
+pub use utils::generate_secure_blinding_factor;
 pub use utils::{
-    constant_time_eq_bytes, deserialize, generate_csprng_blinding_factor,
-    generate_deterministic_blinding_factor, hash_bytes, hash_serializable, location_commitment,
-    serialize, training_commitment, validate_blinding_factor,
+    constant_time_eq_bytes, deserialize, generate_deterministic_blinding_factor, hash_bytes,
+    hash_serializable, location_commitment, serialize, training_commitment,
+    validate_blinding_factor,
 };

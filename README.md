@@ -99,7 +99,7 @@ smp-zk-proofs/
 
 ### Proof object
 
-```rust
+```rust,ignore
 pub struct Proof {
     pub circuit: CircuitKind,
     pub scheme: ProofScheme,
@@ -120,13 +120,13 @@ Proofs, verification keys, and public inputs support deterministic `bincode` ser
 ```rust
 use smp_zk_proofs::{
     BoundingBox, LocationPrivateWitness, LocationPublicInputs, ProvingContext,
-    prove_location, verify_location_proof, generate_secure_blinding_factor,
+    prove_location, verify_location_proof, generate_deterministic_blinding_factor,
 };
 
-#[cfg(feature = "rand")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Generate cryptographically secure blinding factor
-    let blinding = generate_secure_blinding_factor()?;
+    // In production use `generate_secure_blinding_factor()` (requires the `rand` feature).
+    // Here we use the deterministic variant for a self-contained example.
+    let blinding = generate_deterministic_blinding_factor([7u8; 32]);
     
     let context = ProvingContext::from_seed([7u8; 32]);
     let witness = LocationPrivateWitness {
@@ -156,13 +156,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```rust
 use smp_zk_proofs::{
     ProvingContext, TrainingPrivateWitness, TrainingPublicInputs, 
-    prove_training, verify_training_proof, generate_secure_blinding_factor,
+    prove_training, verify_training_proof, generate_deterministic_blinding_factor,
 };
 
-#[cfg(feature = "rand")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Generate cryptographically secure blinding factor
-    let blinding = generate_secure_blinding_factor()?;
+    // In production use `generate_secure_blinding_factor()` (requires the `rand` feature).
+    // Here we use the deterministic variant for a self-contained example.
+    let blinding = generate_deterministic_blinding_factor([9u8; 32]);
     
     let context = ProvingContext::from_seed([9u8; 32]);
     let witness = TrainingPrivateWitness {

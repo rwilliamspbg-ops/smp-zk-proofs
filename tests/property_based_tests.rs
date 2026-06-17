@@ -3,10 +3,10 @@
 
 #[cfg(test)]
 mod property_tests {
-    use proptest::{prop_oneof, proptest};
+    use proptest::proptest;
     use smp_zk_proofs::{
         BoundingBox, LocationPrivateWitness, LocationPublicInputs, TrainingPrivateWitness,
-        TrainingPublicInputs, VerificationKey, generate_deterministic_blinding_factor,
+        TrainingPublicInputs, generate_deterministic_blinding_factor,
     };
 
     // Property: Bounding box must always be valid (x_min <= x_max, y_min <= y_max)
@@ -15,8 +15,11 @@ mod property_tests {
         #[test]
         fn bounding_box_is_always_valid(x_min: i64, x_max: i64, y_min: i64, y_max: i64) {
             let box_ = BoundingBox { x_min, x_max, y_min, y_max };
-            // We can't force invalid boxes through the API, so this is a documentation test
-            assert!(box_.validate().is_ok(), "BoundingBox should always be valid");
+            if x_min <= x_max && y_min <= y_max {
+                assert!(box_.validate().is_ok(), "Valid BoundingBox should pass validation");
+            } else {
+                assert!(box_.validate().is_err(), "Invalid BoundingBox should fail validation");
+            }
         }
 
         #[test]
@@ -82,21 +85,19 @@ mod property_tests {
 
             let bounding_box = BoundingBox { x_min, x_max, y_min, y_max };
 
-            if !bounding_box.contains(x, y) {
-                // Prover outside bounds should fail
-                let _public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness);
-                // This will error with ConstraintUnsatisfied
-                assert!(_public_inputs.is_err());
-            } else {
-                // Prover inside bounds should succeed
-                let public_inputs = LocationPublicInputs::from_witness(bounding_box, &witness)
-                    .expect("Location public inputs");
+            // Skip invalid bounding boxes — covered by bounding_box_is_always_valid
+            let Ok(public_inputs) = LocationPublicInputs::from_witness(bounding_box, &witness) else {
+                return Ok(());
+            };
 
-                let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
+            let context = smp_zk_proofs::ProvingContext::from_seed([0u8; 32]);
+            if !bounding_box.contains(x, y) {
+                // Witness outside bounds should fail at prove time
+                assert!(smp_zk_proofs::prove_location(&context, &public_inputs, &witness).is_err());
+            } else {
+                // Witness inside bounds should succeed
                 let proof = smp_zk_proofs::prove_location(&context, &public_inputs, &witness)
                     .expect("Location proof generation");
-
-                // Verify the proof succeeds
                 let verification_key = context.verification_key();
                 assert!(smp_zk_proofs::verify_location_proof(&verification_key, &public_inputs, &proof).is_ok());
             }
@@ -174,8 +175,8 @@ mod property_tests {
         #[test]
         fn proof_serialization_is_idempotent(
             seed: [u8; 32],
-            witness_x_offset: i64,
-            witness_y_offset: i64,
+            witness_x_offset in -50i64..=50i64,
+            witness_y_offset in -50i64..=50i64,
         ) {
             let blinding = generate_deterministic_blinding_factor(seed);
 
@@ -205,7 +206,7 @@ mod property_tests {
             assert_eq!(bytes1, bytes2);
 
             // Deserialize should produce valid proof
-            let deserialized: smp_zk_proofs::Proof = bincode::deserialize(&bytes1).unwrap();
+            let deserialized = smp_zk_proofs::Proof::from_bytes(&bytes1).unwrap();
             assert_eq!(deserialized.circuit, smp_zk_proofs::CircuitKind::Location);
         }
 

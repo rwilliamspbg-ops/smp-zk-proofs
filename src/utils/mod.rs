@@ -66,8 +66,10 @@ pub fn training_commitment(
 /// Use in production code with proper error handling.
 #[cfg(feature = "rand")]
 pub fn generate_csprng_blinding_factor() -> [u8; 32] {
-    use rand::rngs::OsRng;
-    OsRng.random_bytes::<32>()
+    use rand::{RngCore, rngs::OsRng};
+    let mut bytes = [0u8; 32];
+    OsRng.fill_bytes(&mut bytes);
+    bytes
 }
 
 /// Generate a deterministic blinding factor from a seed for testing.
@@ -77,7 +79,7 @@ pub fn generate_deterministic_blinding_factor(seed: [u8; 32]) -> [u8; 32] {
     use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     hasher.update(b"BLINDING_SEED:");
-    hasher.update(&seed);
+    hasher.update(seed);
     Into::<[u8; 32]>::into(hasher.finalize())
 }
 
@@ -85,11 +87,7 @@ pub fn generate_deterministic_blinding_factor(seed: [u8; 32]) -> [u8; 32] {
 ///
 /// Prevents timing attacks when comparing sensitive values.
 pub fn constant_time_eq_bytes(a: &[u8], b: &[u8]) -> bool {
-    if a.len() != b.len() {
-        return false;
-    }
-    use constant_time_eq::ConstantTimeEq;
-    a.ct_eq(b).into()
+    constant_time_eq::constant_time_eq(a, b)
 }
 
 /// Generate a cryptographically secure random blinding factor using CSPRNG.
@@ -98,7 +96,7 @@ pub fn constant_time_eq_bytes(a: &[u8], b: &[u8]) -> bool {
 /// Returns an error if RNG initialization fails.
 #[cfg(feature = "rand")]
 pub fn generate_secure_blinding_factor() -> Result<[u8; 32], ZkProofError> {
-    use rand::rngs::OsRng;
+    use rand::{RngCore, rngs::OsRng};
     let mut bytes = [0u8; 32];
     OsRng.fill_bytes(&mut bytes);
     Ok(bytes)
